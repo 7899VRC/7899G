@@ -27,7 +27,27 @@ inertial Gyro = inertial (PORT10);
 float D = 3.25;
 float Pi= 3.14;
 float G = 36.0/60.0;
+void monitorsetup(){
+ Brain.Screen.clearScreen();
+ Brain.Screen.printAt(1,20,"LF ");
+ Brain.Screen.printAt(1,40,"LM ");
+ Brain.Screen.printAt(1,60,"LB ");
 
+ Brain.Screen.printAt(1,80,"RF ");
+ Brain.Screen.printAt(1,100,"RM ");
+ Brain.Screen.printAt(1,120,"RB ");
+}
+void monitordisplay(){
+  if(LF.installed()){
+  LF.current(amp);
+  LF.temperature(celsius);
+  float current=LF.current(amp);
+  float temp=LF.temperature(celsius);
+  if (temp>50){
+    Brain.Screen.setPenColor(red);
+  }
+  Brain.Screen.printAt(20,20, "current = %.2f A Temp = %.0f",current, temp);
+}}
  void drive(int lspeed, int rspeed, int wt){
 LF.spin(forward, lspeed, percent);
 LB.spin(forward, lspeed, percent);
@@ -78,7 +98,6 @@ drivebreak();
 
 
 void gyroTurn(float target,  float  b=15){
-void gyroTurn(float target);
 
 float heading =0.0;
 float accuracy=2.0;
