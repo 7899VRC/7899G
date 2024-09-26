@@ -41,9 +41,11 @@ void monitorSetup(){
 
 void monitorDisplay(){
   int y =20;
+  float current;
+  float temp;
   if(LF.installed()){
-  float current=LF.current(amp);
-  float temp=LF.temperature(celsius);
+  current=LF.current(amp);
+  temp=LF.temperature(celsius);
   if (temp>50){
     Brain.Screen.setPenColor(red);
   }
