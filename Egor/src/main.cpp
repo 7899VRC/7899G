@@ -48,8 +48,8 @@ void monitordisplay(){
   }
   Brain.Screen.printAt(20,20, "current = %.2f A Temp = %.0f",current, temp);
 }
-else{}
-Brain.Screen.printAt(20,20,"LF PROBLEM");
+else{Brain.Screen.printAt(20,20,"LF PROBLEM");}
+
 
 
 }
@@ -179,7 +179,11 @@ void usercontrol(void) {
    int lstick = Controller1.Axis3.position(percent);
    int rstick = Controller1.Axis2.position(percent);
    int stick4 = Controller1.Axis4.position(percent);
-driveVolts(lstick+stick4,lstick-stick4,10);
+     int stick1 = Controller1.Axis1.position(percent);
+//driveVolts(lstick+stick4,lstick-stick4,10);
+
+driveVolts(lstick+stick1,lstick-stick1,10);  //mario
+
 monitordisplay();
   }
 }
