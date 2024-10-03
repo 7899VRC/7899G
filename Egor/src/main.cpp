@@ -103,13 +103,12 @@ drivebreak();
 
 
 
-void gyroTurn(float target,  float  b=15){
+void gyroTurn(float target,  float  b=10){
 
 float heading =0.0;
 float accuracy=2.0;
 float error= target - heading;
-float kp= 2.0;
-float b=10.0;
+float kp= .5256;
 float speed = kp * error;
 Gyro.setRotation(0.0, degrees);
 while 
@@ -153,9 +152,13 @@ monitorsetup();
 
 void autonomous(void) {
   inchDrive(48.0);
+   wait(1000,msec);
+   gyroTurn(90);
   wait(1000,msec);
-  gyroTurn(90);
-   inchDrive(-48.0);
+  inchDrive(48.0);
+   wait(1000,msec);
+  gyroTurn(-90);
+  
    monitordisplay();
 }
 
