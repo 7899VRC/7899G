@@ -47,7 +47,12 @@ void monitordisplay(){
     Brain.Screen.setPenColor(red);
   }
   Brain.Screen.printAt(20,20, "current = %.2f A Temp = %.0f",current, temp);
-}}
+}
+else{}
+Brain.Screen.printAt(20,20,"LF PROBLEM");
+
+
+}
  void drive(int lspeed, int rspeed, int wt){
 LF.spin(forward, lspeed, percent);
 LB.spin(forward, lspeed, percent);
@@ -146,7 +151,10 @@ void pre_auton(void) {
 
 void autonomous(void) {
   inchDrive(48.0);
+  wait(1000,msec);
+  gyroTurn(90);
 }
+
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
