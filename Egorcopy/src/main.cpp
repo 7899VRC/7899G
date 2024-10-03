@@ -1,8 +1,8 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
-/*    Author:       egorkoynov                                                */
-/*    Created:      9/18/2024, 1:19:54 PM                                     */
+/*    Author:      george kirkman copy of egor code                                               */
+/*    Created:      9/26/2024, 1:19:54 PM                                     */
 /*    Description:  V5 project                                                */
 /*                                                                            */
 /*----------------------------------------------------------------------------*/
@@ -28,7 +28,50 @@ float D = 3.25;
 float Pi= 3.14;
 float G = 36.0/60.0;
 
- void drive(int lspeed, int rspeed, int wt){
+void monitorSetup(){
+  Brain.Screen.clearScreen();
+  Brain.Screen.printAt(1,20,"LF ");
+  Brain.Screen.printAt(1,40,"LM ");
+  Brain.Screen.printAt(1,60,"LB ");
+
+  Brain.Screen.printAt(1,80,"RF ");
+  Brain.Screen.printAt(1,100,"RM ");
+  Brain.Screen.printAt(1,120,"RB ");
+}
+
+void monitorDisplay(){
+  int y =20;
+  float current;
+  float temp;
+  if(LF.installed()){
+  current=LF.current(amp);
+  temp=LF.temperature(celsius);
+  if (temp>50){
+    Brain.Screen.setPenColor(red);
+  }
+  Brain.Screen.printAt(20,20, "current = %.2f A Temp = %.0f  C",current, temp);
+}
+else{
+  Brain.Screen.printAt(20,20, "MOTOR PROBLEM !!!              ");
+}
+ Brain.Screen.setPenColor(white);
+
+y=y+20;
+if(LM.installed()){
+  current=LM.current(amp);
+  temp=LM.temperature(celsius);
+  if (temp>50){
+    Brain.Screen.setPenColor(red);
+  }
+  Brain.Screen.printAt(20,y, "current = %.2f A Temp = %.0f  C",current, temp);
+}
+else{
+  Brain.Screen.printAt(20,y, "MOTOR PROBLEM !!!              ");
+}
+ Brain.Screen.setPenColor(white);
+}
+
+void drive(int lspeed, int rspeed, int wt){
 LF.spin(forward, lspeed, percent);
 LB.spin(forward, lspeed, percent);
 LM.spin(forward, rspeed, percent);
@@ -78,7 +121,6 @@ drivebreak();
 
 
 void gyroTurn(float target,  float  b=15){
-void gyroTurn(float target);
 
 float heading =0.0;
 float accuracy=2.0;
