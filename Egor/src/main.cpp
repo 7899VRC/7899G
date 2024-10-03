@@ -88,8 +88,9 @@ void inchDrive(float target){
 float x =0.0;
 float error=target;
 float speed=0;
-float kp=1.0;
+float kp=5.0;
 float accuracy=1.0;
+LF.setPosition(0.0,rev);
 while (fabs(error) >= accuracy){
 speed=kp*error;
 drive(speed,speed,10);
@@ -108,6 +109,7 @@ float heading =0.0;
 float accuracy=2.0;
 float error= target - heading;
 float kp= 2.0;
+float b=10.0;
 float speed = kp * error;
 Gyro.setRotation(0.0, degrees);
 while 
@@ -134,7 +136,7 @@ drivebreak();
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
-
+monitorsetup();
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
@@ -153,6 +155,8 @@ void autonomous(void) {
   inchDrive(48.0);
   wait(1000,msec);
   gyroTurn(90);
+   inchDrive(-48.0);
+   monitordisplay();
 }
 
 
@@ -173,6 +177,7 @@ void usercontrol(void) {
    int rstick = Controller1.Axis2.position(percent);
    int stick4 = Controller1.Axis4.position(percent);
 driveVolts(lstick+stick4,lstick-stick4,10);
+monitordisplay();
   }
 }
 // Main will set up the competition functions and callbacks.
