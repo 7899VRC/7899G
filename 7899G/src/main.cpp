@@ -31,9 +31,9 @@ motor lift = motor(PORT15, ratio18_1, false);
 
 digital_out mogo_mech = digital_out(Brain.ThreeWirePort.A);
 
-inertial Inertial = inertial(PORT12);
+inertial Inertial = inertial(PORT13);
 
-bool mogo_mech_bool = true;
+//bool mogo_mech_bool = true;
 bool verified = false;
 
 // PID Variables
@@ -42,19 +42,43 @@ double integralDistance = 0;
 double previousErrorHeading = 0;
 double integralHeading = 0;
 const double wheelDiameter = 2.75; // Wheel diameter in inches
-const double wheelCircumference = wheelDiameter * 3.141592653589793; // Circumference in inches
-
+const double WHEELCIRCUMFERENCE = wheelDiameter * 3.141592653589793; // Circumference in inches
+const double PI = 3.1415;
+const double D = 2.75;
+const double G = 3.0 / 4.0;
 
 void mogo_mech_control() {
-  mogo_mech_bool = !mogo_mech_bool;
-  mogo_mech.set(mogo_mech_bool);
+  
+  mogo_mech.set(!mogo_mech.value());
 }
 
+void driveVolts(int lspeed, int rspeed, int wt){
+  lspeed = lspeed * 120;
+  rspeed = rspeed * 120;
+// Set motor speeds
+  left_motor1.spin(fwd, lspeed, voltageUnits::mV);
+  left_motor2.spin(fwd, lspeed, voltageUnits::mV);
+  left_motor3.spin(fwd, lspeed, voltageUnits::mV);
+  right_motor1.spin(fwd, rspeed, voltageUnits::mV);
+  right_motor2.spin(fwd, rspeed, voltageUnits::mV);
+  right_motor3.spin(fwd, rspeed, voltageUnits::mV);
+  wait(wt, msec);
+
+}
+
+void driveBrake(){
+  left_motor1.stop(brake);
+  left_motor2.stop(brake);
+  left_motor3.stop(brake);
+  right_motor1.stop(brake);
+  right_motor2.stop(brake);
+  right_motor3.stop(brake);
+}
 //code by Will
 /**
 void driveforward(double inches, double velocity, bool wait) {
   
-  double rotation = (360.0 / wheelCircumference) * inches; 
+  double rotation = (360.0 / WHEELCIRCUMFERENCE) * inches; 
 
   left_motor1.setBrake(coast);
   left_motor2.setBrake(coast);
@@ -106,36 +130,57 @@ void resetPID() {
 }
 
 //InchDrive helped by Jeffrey
-void inchDrive(float targetDistanceInches, double targetVelocity){
-  float targetDistanceInDegrees = (targetDistanceInches/wheelCircumference) * 360; //converts distance to degrees
-  left_motor1.resetPosition(); //resets rotations of left_motor1
-  float actualDistance = left_motor1.position(deg); //actual distance calculates rotations of left_motor1
-  Brain.Screen.print(targetDistanceInDegrees);
+void inchDrive(float targetDistanceInches, double targetVelocity, float wait_ms=10){
+  //float targetDistanceInDegrees = (targetDistanceInches/WHEELCIRCUMFERENCE) * 360; //converts distance to degrees
+  left_motor1.setPosition(0.0 , rev); //resets rotations of left_motor1
+  float actualDistance = 0.0; //actual distance calculates rotations of left_motor1
+  float error=targetDistanceInches-actualDistance;
+  float kp=5.0;
+  float accuracy=0.5;
+
+  while(fabs(error) >= accuracy){ 
+    targetVelocity=kp*error;
+    //Drives forward until actual distance meets target distance
+   
+      driveVolts(targetVelocity,targetVelocity,100);
+   
+    
+    actualDistance = left_motor1.position(rev)*PI*D*G;
+    error=targetDistanceInches-actualDistance;
+  Brain.Screen.print(error);
   Brain.Screen.newLine();
-  while(actualDistance < targetDistanceInDegrees){ //Drives forward until actual distance meets target distance
-    left_motor1.spin(forward, targetVelocity, pct);
-    left_motor2.spin(forward, targetVelocity, pct);
-    left_motor3.spin(forward, targetVelocity, pct);
-    right_motor1.spin(forward, targetVelocity, pct);
-    right_motor2.spin(forward, targetVelocity, pct);
-    right_motor3.spin(forward, targetVelocity, pct);
-    actualDistance = left_motor1.position(deg);
-    Brain.Screen.print(actualDistance);
-    Brain.Screen.newLine();
-  }\
-  left_motor1.stop();
-  left_motor2.stop();
-  left_motor3.stop();
-  right_motor1.stop();
-  right_motor2.stop();
-  right_motor3.stop();
+  }
+  driveBrake();
+  wait(wait_ms, msec);
 } 
+
+void gyroTurn(float targetHeading, float speed=50){
+
+	float heading=0.0; //initialize a variable for heading
+	Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
+	float error=targetHeading-heading;
+  float accuracy=1.0;
+
+
+	while(fabs(error)>accuracy){
+    if(error>0){
+		driveVolts(speed, -speed, 10); //turn right at speed
+    }
+    else{
+      driveVolts(-speed, speed, 10); //turn left at speed
+    }
+		heading=Inertial.rotation(deg);  //measure the heading of the robot
+    error=targetHeading-heading;
+
+	}
+	driveBrake();  //stop the drive
+}
 
 void drivePID(double targetDistanceInInches, double targetVelocity, double KpD, double KiD, double KdD) {
     resetPID();
 
     // Convert target distance from inches to degrees
-    double targetDistance = (targetDistanceInInches / wheelCircumference) * 360; // Degrees
+    double targetDistance = (targetDistanceInInches / WHEELCIRCUMFERENCE) * 360; // Degrees
 
     // Reset motor positions
     left_motor1.resetPosition();
@@ -253,11 +298,36 @@ void pre_auton(void) {
 
 
 void autonomous(void){
-      inchDrive(24,50);  
-      turnToHeading(90, 0.1, 0.1, 0.1); //might need to change the numbers
+      Inertial.calibrate();
+      while (Inertial.isCalibrating()) {
+        wait(10, msec);
+      }
+
+      inchDrive(-20, 80, 500);
+      mogo_mech_control();
+      conveyor.spin(forward, 100, pct);
+      wait(3, sec);
+      conveyor.stop();
+      mogo_mech_control();
 
 
-      wait(10,msec); 
+      // inchDrive(-2, 80, 500);
+      // clamp mogo
+      // drop ring
+      //gyroTurn(135.0, 30);
+      //inchDrive(34, 80, 500);
+      // release mogo
+      //gyroTurn(-160.0, 30);
+      //inchDrive(35, 80, 500);
+      // pick up ring
+      //inchDrive(3, 80, 500);
+      //gyroTurn(-270.0, 30);
+      // clamp mogo
+      // drop ring
+      //gyroTurn(-130.0, 30);
+      //inchDrive(-23, 80, 500);
+
+      
 }
   // ..........................................................................
   // Wait a moment
@@ -401,6 +471,9 @@ int main() {
 
   // Run the pre-autono mous function.
   pre_auton();
+
+
+  wait(10,msec); 
 
   
   
