@@ -24,7 +24,7 @@ motor left_motor3 = motor(PORT20, ratio6_1, false);
 // Right motors
 motor right_motor1 = motor(PORT1, ratio6_1, false);
 motor right_motor2 = motor(PORT2, ratio6_1, false);
-motor right_motor3 = motor(PORT11, ratio6_1, true);
+motor right_motor3 = motor(PORT14, ratio6_1, true);
 
 motor conveyor = motor(PORT18, ratio6_1, true);
 motor lift = motor(PORT15, ratio18_1, false);
@@ -74,71 +74,18 @@ void driveBrake(){
   right_motor2.stop(brake);
   right_motor3.stop(brake);
 }
-//code by Will
-/**
-void driveforward(double inches, double velocity, bool wait) {
-  
-  double rotation = (360.0 / WHEELCIRCUMFERENCE) * inches; 
-
-  left_motor1.setBrake(coast);
-  left_motor2.setBrake(coast);
-  left_motor3.setBrake(coast);
-  right_motor1.setBrake(coast);
-  right_motor2.setBrake(coast);
-  right_motor3.setBrake(coast);
-
-  left_motor1.resetPosition();
-  left_motor2.resetPosition();
-  left_motor3.resetPosition();
-  right_motor1.resetPosition();
-  right_motor2.resetPosition();
-  right_motor3.resetPosition();
-
-  left_motor1.setVelocity(velocity, pct);
-  left_motor2.setVelocity(velocity, pct);
-  left_motor3.setVelocity(velocity, pct);
-  right_motor1.setVelocity(velocity, pct);
-  right_motor2.setVelocity(velocity, pct);
-  right_motor3.setVelocity(velocity, pct);
-
-
-
-  left_motor1.spinFor(rotation, degrees, false);
-  left_motor2.spinFor(rotation, degrees, false);
-  left_motor3.spinFor(rotation, degrees, false);
-  right_motor1.spinFor(rotation, degrees, false);
-  right_motor2.spinFor(rotation, degrees, false);
-  right_motor3.spinFor(rotation, degrees, wait);
-
-
-  Brain.Screen.print(rotation);
-}
-**/
-
-
-void clamp(double &value, double minValue, double maxValue) {
-    if (value > maxValue) {
-        value = maxValue;
-    } else if (value < minValue) {
-        value = minValue;
-    }
-}
-
-void resetPID() {
-    previousErrorDistance = 0;
-    integralDistance = 0;
-}
 
 //InchDrive helped by Jeffrey
-void inchDrive(float targetDistanceInches, double targetVelocity, float wait_ms=10){
+void inchDrive(float targetDistanceInches, double targetVelocity, float timeout, float wait_ms=10, float kp = 5.0){
   //float targetDistanceInDegrees = (targetDistanceInches/WHEELCIRCUMFERENCE) * 360; //converts distance to degrees
   left_motor1.setPosition(0.0 , rev); //resets rotations of left_motor1
   float actualDistance = 0.0; //actual distance calculates rotations of left_motor1
   float error=targetDistanceInches-actualDistance;
-  float kp=5.0;
+  
   float accuracy=0.5;
+  timer t2;
 
-  while(fabs(error) >= accuracy){ 
+  while(t2.time(msec) < timeout){
     targetVelocity=kp*error;
     //Drives forward until actual distance meets target distance
    
@@ -154,120 +101,34 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float wait_ms=
   wait(wait_ms, msec);
 } 
 
-void gyroTurn(float targetHeading, float speed=50){
+void gyroTurn(float targetHeading, int timeout){
 
 	float heading=0.0; //initialize a variable for heading
-	Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
+	// Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
+      Inertial.resetRotation();
+
 	float error=targetHeading-heading;
-  float accuracy=1.0;
+  float accuracy=2.0;
+  double kp = 2;
+  timer t1;
 
 
-	while(fabs(error)>accuracy){
-    if(error>0){
-		driveVolts(speed, -speed, 10); //turn right at speed
-    }
-    else{
-      driveVolts(-speed, speed, 10); //turn left at speed
-    }
+	while(t1.time(msec) < timeout){
 		heading=Inertial.rotation(deg);  //measure the heading of the robot
     error=targetHeading-heading;
+    float speed = error * kp;
+    // if(error>0){
+		driveVolts(speed, -speed, 10); //turn right at speed
+    // }
+    // else{
+    //   driveVolts(speed, -speed, 10); //turn left at speed
+    // }
+    // wait(20,msec);
 
 	}
 	driveBrake();  //stop the drive
 }
 
-void drivePID(double targetDistanceInInches, double targetVelocity, double KpD, double KiD, double KdD) {
-    resetPID();
-
-    // Convert target distance from inches to degrees
-    double targetDistance = (targetDistanceInInches / WHEELCIRCUMFERENCE) * 360; // Degrees
-
-    // Reset motor positions
-    left_motor1.resetPosition();
-    left_motor2.resetPosition();
-    left_motor3.resetPosition();
-    right_motor1.resetPosition();
-    right_motor2.resetPosition();
-    right_motor3.resetPosition();
-
-    double actualDistance = 0;
-    double errorDistance = 0;  
-    actualDistance = (left_motor1.position(deg));
-    errorDistance = targetDistance - actualDistance;
-
-    while (fabs(errorDistance) > 1) { // 1-degree tolerance
-        double Speed = (KpD * errorDistance);
-
-        left_motor1.spin(forward, Speed, pct);
-        left_motor2.spin(forward, Speed, pct);
-        left_motor3.spin(forward, Speed, pct);
-        right_motor1.spin(forward, Speed, pct);
-        right_motor2.spin(forward, Speed, pct);
-        right_motor3.spin(forward, Speed, pct);
-
-        Brain.Screen.clearScreen();
-        Brain.Screen.setCursor(1, 1);
-        Brain.Screen.print(errorDistance);
-        Brain.Screen.newLine();
-        Brain.Screen.print(actualDistance);
-        Brain.Screen.newLine();
-        Brain.Screen.print(Speed);
-        wait(20, msec); // Small delay for stability
-    }
-
-    // Stop motors after the movement
-    left_motor1.stop();
-    left_motor2.stop();
-    left_motor3.stop();
-    right_motor1.stop();
-    right_motor2.stop();
-    right_motor3.stop();
-    
-
-}
-
-void turnToHeading(double targetHeading, double KpH, double KiH, double KdH) {
-    // Reset Inertial
-    Inertial.resetRotation();
-    resetPID(); // Reset PID values for heading control
-
-    while (fabs(targetHeading - Inertial.heading(deg)) > 2) { // 2-degree tolerance
-        double actualHeading = Inertial.heading(deg);
-
-        double errorHeading = targetHeading - actualHeading;
-        integralHeading += errorHeading;
-
-        // Prevent integral windup
-        if (fabs(errorHeading) < 10) {
-            integralHeading += errorHeading;
-        }
-
-        double derivativeHeading = errorHeading - previousErrorHeading;
-        double outputHeading = KpH * errorHeading + KiH * integralHeading + KdH * derivativeHeading;
-
-        // Clamp output to motor limits
-        clamp(outputHeading, -100.0, 100.0);
-
-        // Set motor speeds for turning
-        left_motor1.spin(forward, -outputHeading, percent);
-        left_motor2.spin(forward, -outputHeading, percent);
-        left_motor3.spin(forward, -outputHeading, percent);
-        right_motor1.spin(forward, outputHeading, percent);
-        right_motor2.spin(forward, outputHeading, percent);
-        right_motor3.spin(forward, outputHeading, percent);
-
-        previousErrorHeading = errorHeading;
-        this_thread::sleep_for(20); // Delay for stability
-    }
-
-    // Stop motors after the turn
-    left_motor1.stop();
-    left_motor2.stop();
-    left_motor3.stop();
-    right_motor1.stop();
-    right_motor2.stop();
-    right_motor3.stop();
-}
 
 
 /*---------------------------------------------------------------------------*/
@@ -281,13 +142,17 @@ void turnToHeading(double targetHeading, double KpH, double KiH, double KdH) {
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
+      // Inertial.calibrate();
+      // while (Inertial.isCalibrating()) {
+      //   wait(10, msec);
+      // }
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
 
 /*---------------------------------------------------------------------------*/
-/*                                                                           */
+/*                                                                          */
 /*                              Autonomous Task                              */
 /*                                                                           */
 /*  This task is used to control your robot during the autonomous phase of   */
@@ -303,29 +168,27 @@ void autonomous(void){
         wait(10, msec);
       }
 
-      inchDrive(-20, 80, 500);
-      mogo_mech_control();
-      conveyor.spin(forward, 100, pct);
-      wait(3, sec);
+      inchDrive(-5, 100, 800, 20);
+      mogo_mech.set(true);
+      wait(500,msec);
+      conveyor.setVelocity(100, pct);
+      conveyor.setMaxTorque(100, pct);
+      conveyor.spin(fwd);
+      wait(2, sec);
       conveyor.stop();
-      mogo_mech_control();
-
-
-      // inchDrive(-2, 80, 500);
-      // clamp mogo
-      // drop ring
-      //gyroTurn(135.0, 30);
-      //inchDrive(34, 80, 500);
-      // release mogo
-      //gyroTurn(-160.0, 30);
-      //inchDrive(35, 80, 500);
-      // pick up ring
-      //inchDrive(3, 80, 500);
-      //gyroTurn(-270.0, 30);
-      // clamp mogo
-      // drop ring
-      //gyroTurn(-130.0, 30);
-      //inchDrive(-23, 80, 500);
+      gyroTurn(105, 500);
+      inchDrive(-50, 50, 1000, 10);
+      mogo_mech.set(false);
+      inchDrive(10, 80, 800, 10);
+      inchDrive(-12, 100, 800, 10, 5); 
+      inchDrive(70, 10, 800, 10, 2);
+       
+      gyroTurn(-30, 300);
+      inchDrive(100, 10, 800, 0.5);
+      
+      // gyroTurn(135.0, 30);
+      // inchDrive(34, 80, 100);
+      // mogo_mech_control();
 
       
 }
