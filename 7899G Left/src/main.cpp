@@ -317,16 +317,17 @@ void autonomous(void){
       
 
 
-      inchDrive(-28, 80, 1200, 30);
-      gyroTurn(-30, 800);
-      inchDrive(-23, 500, 1200, 10, 4.3);
+      inchDrive(-27, 80, 1200, 30);
+      gyroTurn(30, 800);
+      inchDrive(-20, 500, 1200, 10, 4.3);
       mogo_mech.set(true);
       conveyor.spin(fwd, 100, pct);
-      wait(2, sec);
+      wait(2.5, sec);
       conveyor.stop();
-      mogo_mech.set(false);
-      wait(0.5, sec);
-      inchDrive(-10, 80, 1200, 1000);
+      wait(1, sec);
+      // mogo_mech.set(false);
+      // wait(0.5, sec);
+      // inchDrive(-10, 80, 1200, 1000);
       
       
       // gyroTurn(135.0, 30);
@@ -437,35 +438,83 @@ void usercontrol(void) {
 void brain_screen() {
   Brain.Screen.setCursor(1, 1);
 
-  Brain.Screen.print("Left Motor 1: ");
-  Brain.Screen.print(left_motor1.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
-
-  Brain.Screen.print("Left Motor 2: ");
-  Brain.Screen.print(left_motor2.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
-
-  Brain.Screen.print("Left Motor 3: ");
-  Brain.Screen.print(left_motor3.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
-
-  Brain.Screen.print("Right Motor 1: ");
-  Brain.Screen.print(right_motor1.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
-
-  Brain.Screen.print("Right Motor 2: ");
-  Brain.Screen.print(right_motor2.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
-  
-  Brain.Screen.print("Right Motor 3: ");
-  Brain.Screen.print(right_motor3.temperature(percent));
-  Brain.Screen.print("% Temperature");
-  Brain.Screen.newLine();
+  if (left_motor1.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Left Motor 1: ");
+    Brain.Screen.print(left_motor1.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Left Motor 1: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
+/**/
+  if (left_motor2.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Left Motor 2: ");
+    Brain.Screen.print(left_motor1.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Left Motor 2: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
+/**/
+  if (left_motor3.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Left Motor 3: ");
+    Brain.Screen.print(left_motor1.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Left Motor 3: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
+/**/
+  if (right_motor1.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Right Motor 1: ");
+    Brain.Screen.print(right_motor1.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Right Motor 1: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
+/**/
+  if (right_motor2.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Right Motor 2: ");
+    Brain.Screen.print(right_motor2.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Right Motor 2: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
+/**/  
+  if (right_motor3.installed()) {
+    Brain.Screen.setPenColor(white);
+    Brain.Screen.print("Right Motor 3: ");
+    Brain.Screen.print(right_motor3.temperature(percent));
+    Brain.Screen.print("% Temperature");
+    Brain.Screen.newLine();
+  }
+  else {
+    Brain.Screen.setPenColor(red);
+    Brain.Screen.print("Right Motor 3: PROBLEM DETECTED!");
+    Brain.Screen.newLine();
+  }
 
   
 }
