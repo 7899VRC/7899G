@@ -26,8 +26,10 @@ motor right_motor1 = motor(PORT1, ratio6_1, false);
 motor right_motor2 = motor(PORT2, ratio6_1, false);
 motor right_motor3 = motor(PORT14, ratio6_1, true);
 
-motor conveyor = motor(PORT18, ratio6_1, true);
-motor lift = motor(PORT15, ratio18_1, false);
+motor conveyorA = motor(PORT18, ratio6_1, true);
+motor conveyorB = motor(PORT15, ratio6_1, true);
+motor_group conveyor = motor_group(conveyorA, conveyorB);
+motor lift = motor(PORT19, ratio18_1, false);
 
 digital_out mogo_mech = digital_out(Brain.ThreeWirePort.A);
 
@@ -101,7 +103,7 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
   wait(wait_ms, msec);
 } 
 
-void gyroTurn(float targetHeading, int timeout){
+void gyroTurn(float targetHeading, int timeout, double kp = 2){
 
 	float heading=0.0; //initialize a variable for heading
 	// Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
@@ -109,7 +111,7 @@ void gyroTurn(float targetHeading, int timeout){
 
 	float error=targetHeading-heading;
   float accuracy=2.0;
-  double kp = 2;
+  
   timer t1;
 
 
@@ -142,10 +144,10 @@ void gyroTurn(float targetHeading, int timeout){
 /*---------------------------------------------------------------------------*/
 
 void pre_auton(void) {
-      // Inertial.calibrate();
-      // while (Inertial.isCalibrating()) {
-      //   wait(10, msec);
-      // }
+      Inertial.calibrate();
+      while (Inertial.isCalibrating()) {
+        wait(10, msec);
+      }
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -163,28 +165,64 @@ void pre_auton(void) {
 
 
 void autonomous(void){
-      Inertial.calibrate();
-      while (Inertial.isCalibrating()) {
-        wait(10, msec);
-      }
+      
+  inchDrive(-10, 80, 500, 0, 8);
+  
+  mogo_mech.set(true);
+  wait(200, msec);
+  conveyor.setVelocity(100, pct);
+  conveyor.setMaxTorque(100, pct);
+  conveyor.spin(fwd);
+  gyroTurn(66, 700);
+  inchDrive(22, 80, 1200, 0);
+  wait(300, msec);
+  inchDrive(14, 80, 600, 0);
+  wait(500, msec);
+  gyroTurn(120, 1000);
+  
+  inchDrive(-14, 80, 800, 0);
+  
+  mogo_mech.set(false);
+  wait(80, msec);
+  inchDrive(10.5, 80, 800, 0); //come out of corner
+  gyroTurn(-119, 1000);
+  inchDrive(-85, 80, 2000, 20, 2);
+  mogo_mech.set(true);
+  wait(50, msec);
+  gyroTurn(177, 1200);
+  inchDrive(22, 80, 1200, 0);
+  wait(200, msec);
+  inchDrive(14, 80, 600, 10);
+  wait(50, msec);
+  gyroTurn(-120, 1000);
+  inchDrive(30, 80, 800);
+  gyroTurn(-45, 500);
 
-      inchDrive(-5, 100, 800, 20);
-      mogo_mech.set(true);
-      wait(500,msec);
-      conveyor.setVelocity(100, pct);
-      conveyor.setMaxTorque(100, pct);
-      conveyor.spin(fwd);
-      wait(2, sec);
-      conveyor.stop();
-      gyroTurn(105, 500);
-      inchDrive(-50, 50, 1000, 10);
-      mogo_mech.set(false);
-      inchDrive(10, 80, 800, 10);
-      inchDrive(-12, 100, 800, 10, 5); 
-      inchDrive(70, 10, 800, 10, 2);
+
+  
+  
+  
+  
+  
+  
+  // conveyor.stop();
+      // inchDrive(-5, 100, 800, 20);
+      // mogo_mech.set(true);
+      // wait(500,msec);
+      // conveyor.setVelocity(100, pct);
+      // conveyor.setMaxTorque(100, pct);
+      // conveyor.spin(fwd);
+      // wait(2, sec);
+      // conveyor.stop();
+      // gyroTurn(105, 500);
+      // inchDrive(-50, 50, 1000, 10);
+      // mogo_mech.set(false);
+      // inchDrive(10, 80, 800, 10);
+      // inchDrive(-12, 100, 800, 10, 5); 
+      // inchDrive(70, 10, 800, 10, 2);
        
-      gyroTurn(-30, 300);
-      inchDrive(100, 10, 800, 0.5);
+      // gyroTurn(-30, 300);
+      // inchDrive(100, 10, 800, 0.5);
       
       // gyroTurn(135.0, 30);
       // inchDrive(34, 80, 100);
@@ -230,7 +268,8 @@ void usercontrol(void) {
   right_motor2.setBrake(coast);
   right_motor3.setBrake(coast);
 
-  conveyor.setBrake(coast);
+  conveyorA.setBrake(coast);
+  conveyorB.setBrake(coast);
   lift.setBrake(hold);
 
   left_motor1.setVelocity(100, pct);
