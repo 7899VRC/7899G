@@ -11,9 +11,10 @@
 #include "robot.h"
 #include "brainDisplay.hpp"
 #include "lift.hpp"
+#include "password.hpp"
 
 // bool mogo_mech_bool = true;
-bool verified = false;
+
 
 // PID Variables
 double previousErrorDistance = 0;
@@ -340,83 +341,83 @@ void autonomous(void)
 
 void usercontrol(void)
 {
-  
-  Controller.ButtonX.pressed(mogo_mech_control);
-  Controller.ButtonR1.pressed(nextState);
-  Controller.ButtonR2.pressed(prevState);
-  // User control code here, inside the loop
+  if (verified == true) {
+    Controller.ButtonX.pressed(mogo_mech_control);
+    Controller.ButtonR1.pressed(nextState);
+    Controller.ButtonR2.pressed(prevState);
+    // User control code here, inside the loop
 
-  // This is the main execution loop for the user control program.
-  // Each time through the loop your program should update motor + servo
-  // values based on feedback from the joysticks.
-
-  // ........................................................................
-  float sensitivity = 1.0;
-
-  left_motor_front.setBrake(coast);
-  left_motor_middle.setBrake(coast);
-  left_motor_back.setBrake(coast);
-  right_motor_front.setBrake(coast);
-  right_motor_middle.setBrake(coast);
-  right_motor_back.setBrake(coast);
-
-  hook.setBrake(coast);
-  LB.setBrake(coast);
-  
-  
-
-  left_motor_front.setVelocity(100, pct);
-  left_motor_middle.setVelocity(100, pct);
-  left_motor_back.setVelocity(100, pct);
-  right_motor_front.setVelocity(100, pct);
-  right_motor_middle.setVelocity(100, pct);
-  right_motor_back.setVelocity(100, pct);
-
-  hook.setVelocity(100, pct);
-  LB.setVelocity(100, pct);
-  // lift.setVelocity(100, pct);
-  while (true)
-  {
-    
-    double forward = Controller.Axis3.position();
-    double turn = Controller.Axis1.position();
-
-    // Calculate motor speeds
-    double left_speed = (forward + turn) * sensitivity * 12 / 100;
-    double right_speed = (forward - turn) * sensitivity * 12 / 100;
-
-    // Set motor speeds
-    left_motor_front.spin(fwd, left_speed, volt);
-    left_motor_middle.spin(fwd, left_speed, volt);
-    left_motor_back.spin(fwd, left_speed, volt);
-    right_motor_front.spin(fwd, right_speed, volt);
-    right_motor_middle.spin(fwd, right_speed, volt);
-    right_motor_back.spin(fwd, right_speed, volt);
-
-    // Intake hook
-    if (Controller.ButtonL1.pressing())
-    {
-      hook.spin(fwd, 100, pct);
-    }
-    else if (Controller.ButtonL2.pressing())
-    {
-      hook.spin(fwd, -100, pct);
-    }
-    else
-    {
-      hook.stop();
-    }
-
-    liftControl();
+    // This is the main execution loop for the user control program.
+    // Each time through the loop your program should update motor + servo
+    // values based on feedback from the joysticks.
 
     // ........................................................................
+    float sensitivity = 1.0;
 
-    wait(20, msec); // Sleep the task for a short amount of time to
-                    // prevent wasted resources.
+    left_motor_front.setBrake(coast);
+    left_motor_middle.setBrake(coast);
+    left_motor_back.setBrake(coast);
+    right_motor_front.setBrake(coast);
+    right_motor_middle.setBrake(coast);
+    right_motor_back.setBrake(coast);
 
+    hook.setBrake(coast);
+    LB.setBrake(coast);
     
-  }
+    
 
+    left_motor_front.setVelocity(100, pct);
+    left_motor_middle.setVelocity(100, pct);
+    left_motor_back.setVelocity(100, pct);
+    right_motor_front.setVelocity(100, pct);
+    right_motor_middle.setVelocity(100, pct);
+    right_motor_back.setVelocity(100, pct);
+
+    hook.setVelocity(100, pct);
+    LB.setVelocity(100, pct);
+    // lift.setVelocity(100, pct);
+    while (true)
+    {
+      
+      double forward = Controller.Axis3.position();
+      double turn = Controller.Axis1.position();
+
+      // Calculate motor speeds
+      double left_speed = (forward + turn) * sensitivity * 12 / 100;
+      double right_speed = (forward - turn) * sensitivity * 12 / 100;
+
+      // Set motor speeds
+      left_motor_front.spin(fwd, left_speed, volt);
+      left_motor_middle.spin(fwd, left_speed, volt);
+      left_motor_back.spin(fwd, left_speed, volt);
+      right_motor_front.spin(fwd, right_speed, volt);
+      right_motor_middle.spin(fwd, right_speed, volt);
+      right_motor_back.spin(fwd, right_speed, volt);
+
+      // Intake hook
+      if (Controller.ButtonL1.pressing())
+      {
+        hook.spin(fwd, 100, pct);
+      }
+      else if (Controller.ButtonL2.pressing())
+      {
+        hook.spin(fwd, -100, pct);
+      }
+      else
+      {
+        hook.stop();
+      }
+
+      liftControl();
+
+      // ........................................................................
+
+      wait(20, msec); // Sleep the task for a short amount of time to
+                      // prevent wasted resources.
+
+      
+    }
+  }
 }
 
 
@@ -433,13 +434,25 @@ int main()
 
 
   wait(10, msec);
-  drawLogo();
+
+  if (verified == true) {
+    drawLogo();
+  }
+  else {
+    Brain.Screen.clearScreen();
+  }
 
   // Prevent main from exiting with an infinite loop.
   while (true)
   {
+    verification();
     int idle = 1;
-    brain_screen();
+    if (verified == true) {
+      brain_screen();
+    }
+    else {
+      Brain.Screen.clearScreen();
+    }
     // //checkPassword();
     // if (verified == true) {
     //   usercontrol();
