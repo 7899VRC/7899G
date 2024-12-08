@@ -1,16 +1,16 @@
 {
 	"extension": {
-		"version": "0.6.0",
+		"version": "0.6.1",
 		"json": 2
 	},
 	"project": {
-		"name": "LadyBeuford",
+		"name": " ",
 		"description": "",
-		"creationDate": "11/1/2024, 4:56:27 PM",
+		"creationDate": "Tue, 03 Dec 2024 01:07:30 GMT",
 		"platform": "V5",
 		"language": "cpp",
-		"slot": 2,
-		"sdkVersion": "V5_20240223_11_00_00",
+		"slot": 8,
+		"sdkVersion": "V5_20240802_15_00_00",
 		"cpp": {
 			"includePath": [],
 			"printf_float": true

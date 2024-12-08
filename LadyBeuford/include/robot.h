@@ -23,8 +23,6 @@ using namespace vex;
 // motor hook;
 // motor LB;
 
-
-
 // inertial Inertial;
 // optical Optical;
 // color detectedColor;
@@ -47,13 +45,11 @@ motor right_motor_back = motor(PORT17, ratio6_1, false);
 digital_out mogo_mech = digital_out(Brain.ThreeWirePort.A);
 
 motor hook = motor(PORT2, ratio6_1, false);
-motor LB = motor(PORT11, ratio36_1, true);
-
-
+motor LB = motor(PORT4, ratio36_1, true);
 
 inertial Inertial = inertial(PORT13);
 optical Optical = optical(PORT15);
 color detectedColor = Optical.color();
-rotation LBRotation = rotation(PORT2, false);
+rotation LBRotation = rotation(PORT3, false);
 
 #endif

@@ -1,57 +1,72 @@
 #include "robot.h"
 #include "map"
 
-enum LiftStates {
+enum LiftStates
+{
     idle,
     loading,
     scoring,
+    alliance,
     tipping
 };
 
 std::map<LiftStates, double> LiftValuesMap = {
     {idle, 0},
-    {loading, 25},
-    {scoring, 180},
-    {tipping, 230}
+    {loading, 76},
+    {scoring, 386},
+    {alliance, 540},
+    {tipping, 750}
+
 };
 
 LiftStates currentState = idle;
 
-void nextState() {
-    switch (currentState) {
-        case idle:
-            currentState = loading;
-            break;
-        case loading:
-            currentState = scoring;
-            break;
-        case scoring:
-            currentState = tipping;
-            break;
-        case tipping:
-            currentState = idle;
+void nextState()
+{
+    switch (currentState)
+    {
+    case idle:
+        currentState = loading;
+        break;
+    case loading:
+        currentState = scoring;
+        break;
+    case scoring:
+        currentState = alliance;
+        break;
+    case alliance:
+        currentState = tipping;
+        break;
+    case tipping:
+        currentState = idle;
     }
 }
 
-void prevState() {
-    switch (currentState) {
-        case idle:
-            currentState = tipping;
-            break;
-        case loading:
-            currentState = idle;
-            break;
-        case scoring:
-            currentState = loading;
-            break;
-        case tipping:
-            currentState = scoring;
+void prevState()
+{
+    switch (currentState)
+    {
+    case idle:
+        currentState = tipping;
+        break;
+    case loading:
+        currentState = idle;
+        break;
+    case scoring:
+        currentState = loading;
+        break;
+    case alliance:
+        currentState = scoring;
+        break;
+    case tipping:
+        currentState = alliance;
     }
 }
 
-double kp = 5.0;
+double kp = 0.3;
 
-void liftControl() {
+void liftControl()
+{
     double target = LiftValuesMap[currentState];
     double error = target - LBRotation.position(degrees);
     LB.spin(forward, error * kp, volt);

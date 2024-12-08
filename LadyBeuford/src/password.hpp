@@ -1,27 +1,16 @@
 #include "robot.h"
 
 bool verified = false;
-bool step_one_complete = false;
-bool step_two_complete = false;
+bool p1 = false;
 
-void verification() {
-    if (Controller.ButtonY.pressing()) {
-        step_one_complete = true;
+void password()
+{
+    if (p1 == true and Controller.ButtonY.pressing() == true)
+    {
+        verified = true;
     }
-    if (Controller.ButtonLeft.pressing()) {
-        if (step_one_complete == true) {
-            step_two_complete = true;
-        }
+    else if (Controller.ButtonRight.pressing() == true)
+    {
+        p1 = true;
     }
-    if (Controller.ButtonRight.pressing()) {
-        if (step_two_complete == true) {
-            verified = true;
-        }
-    }
-    if (Controller.ButtonDown.pressing()) {
-        step_one_complete = false;
-        step_two_complete = false;
-        verified = false;
-    }
-    
 }
