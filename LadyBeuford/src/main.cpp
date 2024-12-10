@@ -16,6 +16,44 @@ const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
 
+static bool verified = false;
+
+void setup() {
+  // if (Controller.ButtonY.pressing()) {
+  //   step1 = true;
+  // }
+  // if (Controller.ButtonLeft.pressing()) {
+  //   if (step1 == true) {
+  //     step2 = true;
+  //   }
+  // }
+  // if (Controller.ButtonRight.pressing()) {
+  //   if (step2 == true) {
+  //     verified = true;
+  //   }
+  // }
+
+
+  static bool step1_complete = false;
+  static bool step2_complete = false;
+
+  // Check if ButtonY is pressed for step1
+  if (Controller.ButtonY.pressing() && !step1_complete) {
+    step1_complete = true;
+  }
+
+  // Check if ButtonLeft is pressed for step2, but only if step1 is complete
+  if (Controller.ButtonLeft.pressing() && step1_complete && !step2_complete) {
+    step2_complete = true;
+  }
+
+  // Check if ButtonRight is pressed to verify, but only if step2 is complete
+  if (Controller.ButtonRight.pressing() && step2_complete && !verified) {
+    verified = true;
+    
+  }
+}
+
 void mogo_mech_control()
 {
 
@@ -135,40 +173,16 @@ void pre_auton(void)
 
 void autonomous(void)
 {
-  inchDrive(-26, 80, 900, 0);
-  gyroTurn(-29, 650);
-  inchDrive(-25, 80, 1000, 0, 3);
-  // wait(50, msec);
-  mogo_mech.set(true);
-  wait(50, msec);
-
-  hook.spin(forward);
-  wait(500, msec);
-  // change
-  // clamped
-  inchDrive(16, 80, 1000, 0);
-  gyroTurn(30, 700);
-  // changed 10
-  inchDrive(33, 10, 1100, 0);
-  gyroTurn(-37, 800);
-  // hook.stop();
-  inchDrive(15, 100, 1100, 0, 2);
-
-  inchDrive(-12, 80, 700, 0);
-  wait(500, msec);
-  gyroTurn(190, 900, 1);
-  mogo_mech.set(false);
-
-  // trying to change speed here.
-  inchDrive(27, 10, 1100, 30);
-  hook.stop();
-  gyroTurn(105, 900);
-  inchDrive(-18, 80, 900, 0);
-  mogo_mech.set(true);
-  hook.spin(forward);
-  inchDrive(-6, 80, 500, 0);
-  gyroTurn(45, 500);
-  inchDrive(-17, 80, 800, 0);
+  currentState = loading;
+  liftControl();
+  inchDrive(-6, 80, 500, 10, 3);
+  gyroTurn(-38, 1000, 1);
+  currentState = alliance;
+  liftControl();
+  wait(1, sec);
+  inchDrive(5, 80, 500, 10);
+  currentState = idle;
+  liftControl();
 
 }
 // ..........................................................................
@@ -219,46 +233,48 @@ void usercontrol(void)
 
   hook.setVelocity(100, pct);
   LB.setVelocity(100, pct);
-  
+
   while (true)
   {
+    setup();
+    if (verified == true) {
+      double forward = Controller.Axis3.position();
+      double turn = Controller.Axis1.position();
 
-    double forward = Controller.Axis3.position();
-    double turn = Controller.Axis1.position();
+      // Calculate motor speeds
+      double left_speed = (forward + turn) * sensitivity * 12 / 100;
+      double right_speed = (forward - turn) * sensitivity * 12 / 100;
 
-    // Calculate motor speeds
-    double left_speed = (forward + turn) * sensitivity * 12 / 100;
-    double right_speed = (forward - turn) * sensitivity * 12 / 100;
+      // Set motor speeds
+      left_motor_front.spin(fwd, left_speed, volt);
+      left_motor_middle.spin(fwd, left_speed, volt);
+      left_motor_back.spin(fwd, left_speed, volt);
+      right_motor_front.spin(fwd, right_speed, volt);
+      right_motor_middle.spin(fwd, right_speed, volt);
+      right_motor_back.spin(fwd, right_speed, volt);
 
-    // Set motor speeds
-    left_motor_front.spin(fwd, left_speed, volt);
-    left_motor_middle.spin(fwd, left_speed, volt);
-    left_motor_back.spin(fwd, left_speed, volt);
-    right_motor_front.spin(fwd, right_speed, volt);
-    right_motor_middle.spin(fwd, right_speed, volt);
-    right_motor_back.spin(fwd, right_speed, volt);
+      // Intake hook
+      if (Controller.ButtonL1.pressing())
+      {
+        hook.spin(fwd, 100, pct);
+      }
+      else if (Controller.ButtonL2.pressing())
+      {
+        hook.spin(fwd, -100, pct);
+      }
+      else
+      {
+        hook.stop();
+      }
 
-    // Intake hook
-    if (Controller.ButtonL1.pressing())
-    {
-      hook.spin(fwd, 100, pct);
+      // LB
+      liftControl();
+
+      // ........................................................................
+
+      wait(20, msec); // Sleep the task for a short amount of time to
+                      // prevent wasted resources.
     }
-    else if (Controller.ButtonL2.pressing())
-    {
-      hook.spin(fwd, -100, pct);
-    }
-    else
-    {
-      hook.stop();
-    }
-
-    // LB
-    liftControl();
-
-    // ........................................................................
-
-    wait(20, msec); // Sleep the task for a short amount of time to
-                    // prevent wasted resources.
   }
 }
 

@@ -14,7 +14,7 @@ std::map<LiftStates, double> LiftValuesMap = {
     {idle, 0},
     {loading, 76},
     {scoring, 386},
-    {alliance, 540},
+    {alliance, 600},
     {tipping, 750}
 
 };
