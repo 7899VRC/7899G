@@ -192,24 +192,27 @@ void autonomous(void)
   thread liftThread = thread(moveLift);
 
 
-  inchDrive(-6, 80, 500, 10, 3);
-  gyroTurn(41, 700, 1);
+  
   currentState = alliance;
+  //alliance scored
   wait(1, sec);
-  inchDrive(5, 80, 500, 10);
+  inchDrive(-12, 80, 500, 5, 3);
+  wait(1, sec);
+  gyroTurn(90, 900, 1);
+  inchDrive(-51, 80, 500, 1, 1);
   currentState = idle;
-  wait(1, sec);
-  // inchDrive(-1, 80, 500, 10, 8);
-  gyroTurn(-18, 500);
-  inchDrive(-41, 80, 1200, 10, 2);
   mogo_mech.set(true);
-  wait(500, msec);
-  gyroTurn(-135, 800);
-  hook.spin(fwd);
-  inchDrive(27, 80, 800, 10);
-  wait(800, msec);
-  gyroTurn(-80, 600);
-  inchDrive(21, 80, 800);
+  //mogo clamped
+  hook.spin(fwd, 100, pct);
+  wait(2, sec);
+  gyroTurn(180, 900, 1);
+  inchDrive(90, 80, 1000, 1, 1);
+  inchDrive(-15, 80, 500, 2, 2);
+  //2 rings intook
+  gyroTurn(120, 900, 1 );
+  inchDrive(28, 80, 500, 5, 2);
+  //3rd ring
+  
 
   isAutonomousRunning = false;
   liftThread.join();
