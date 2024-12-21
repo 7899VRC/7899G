@@ -16,7 +16,9 @@ const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
 
-static bool verified = false;
+static bool setuped = true;
+
+bool isAutonomousRunning = false;
 
 void setup() {
   // if (Controller.ButtonY.pressing()) {
@@ -29,7 +31,7 @@ void setup() {
   // }
   // if (Controller.ButtonRight.pressing()) {
   //   if (step2 == true) {
-  //     verified = true;
+  //     setuped = true;
   //   }
   // }
 
@@ -38,7 +40,7 @@ void setup() {
   static bool step2_complete = false;
 
   // Check if ButtonY is pressed for step1
-  if (Controller.ButtonY.pressing() && !step1_complete) {
+  if (Controller.ButtonL1.pressing() && !step1_complete) {
     step1_complete = true;
   }
 
@@ -48,8 +50,8 @@ void setup() {
   }
 
   // Check if ButtonRight is pressed to verify, but only if step2 is complete
-  if (Controller.ButtonRight.pressing() && step2_complete && !verified) {
-    verified = true;
+  if (Controller.ButtonRight.pressing() && step2_complete && !setuped) {
+    setuped = true;
     
   }
 }
@@ -59,6 +61,20 @@ void mogo_mech_control()
 
   mogo_mech.set(!mogo_mech.value());
 }
+
+
+void moveLift() {
+  while (isAutonomousRunning) {
+    // Add the logic for controlling the lift here
+    // For example:
+    liftControl();
+
+    // Small delay to prevent busy-waiting and reduce CPU usage
+    wait(20, msec);
+  }
+  // Perform cleanup if necessary
+}
+
 
 void driveVolts(int lspeed, int rspeed, int wt)
 {
@@ -173,17 +189,41 @@ void pre_auton(void)
 
 void autonomous(void)
 {
-  currentState = loading;
-  liftControl();
-  inchDrive(-6, 80, 500, 10, 3);
-  gyroTurn(-38, 1000, 1);
-  currentState = alliance;
-  liftControl();
-  wait(1, sec);
-  inchDrive(5, 80, 500, 10);
-  currentState = idle;
-  liftControl();
+  isAutonomousRunning = true;
+  thread liftThread = thread(moveLift);
 
+  inchDrive(-5, 80, 500, 10, 4);
+  gyroTurn(41, 500, 2);
+  currentState = alliance;
+  wait(1100, msec);
+  inchDrive(7, 80, 300, 10);
+  currentState = idle;
+  wait(800, msec);
+  // inchDrive(-1, 80, 500, 10, 8);
+  gyroTurn(-18, 500);
+  inchDrive(-45, 80, 1000, 10, 2);
+  mogo_mech.set(true);
+  wait(300, msec);
+  gyroTurn(-129, 1000, 1.5);
+  hook.spin(fwd);
+  inchDrive(29, 80, 850, 10, 3);
+  wait(100, msec);
+  gyroTurn(-97, 800, 0.8);
+  inchDrive(13.5, 80, 800);
+  wait(180, msec);
+  inchDrive(-12, 80, 800);
+  gyroTurn(34, 500, 1.5);
+  currentState = loading;
+  inchDrive(13, 80, 500);
+  wait(800, msec);
+  hook.stop();
+  gyroTurn(60, 500);
+  
+
+  
+  liftThread.join();
+  isAutonomousRunning = false;
+  
 }
 // ..........................................................................
 // Wait a moment
@@ -237,7 +277,7 @@ void usercontrol(void)
   while (true)
   {
     setup();
-    if (verified == true) {
+    if (setuped == true) {
       double forward = Controller.Axis3.position();
       double turn = Controller.Axis1.position();
 
