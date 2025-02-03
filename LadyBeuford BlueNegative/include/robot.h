@@ -33,7 +33,7 @@ brain Brain;
 controller Controller;
 
 // Left motors
-motor left_motor_front = motor(PORT8, ratio6_1, false);
+motor left_motor_front = motor(PORT14, ratio6_1, false);
 motor left_motor_middle = motor(PORT9, ratio6_1, true);
 motor left_motor_back = motor(PORT21, ratio6_1, true);
 
@@ -43,6 +43,7 @@ motor right_motor_middle = motor(PORT18, ratio6_1, false);
 motor right_motor_back = motor(PORT17, ratio6_1, false);
 
 digital_out mogo_mech = digital_out(Brain.ThreeWirePort.H);
+digital_out hitler_mech = digital_out(Brain.ThreeWirePort.C);
 
 motor hook = motor(PORT2, ratio6_1, false);
 motor LB = motor(PORT4, ratio36_1, true);
