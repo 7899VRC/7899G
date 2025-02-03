@@ -6,13 +6,15 @@ enum LiftStates
     idle,
     loading,
     scoring,
+    loading2,
     alliance,
     tipping
 };
 
 std::map<LiftStates, double> LiftValuesMap = {
     {idle, 0},
-    {loading, 76},
+    {loading, 46},
+    {loading2, 160},
     {scoring, 386},
     {alliance, 630},
     {tipping, 750}
@@ -29,6 +31,9 @@ void nextState()
         currentState = loading;
         break;
     case loading:
+        currentState = loading2;
+        break;
+    case loading2:
         currentState = scoring;
         break;
     case scoring:
@@ -52,8 +57,11 @@ void prevState()
     case loading:
         currentState = idle;
         break;
-    case scoring:
+    case loading2:
         currentState = loading;
+        break;
+    case scoring:
+        currentState = loading2;
         break;
     case alliance:
         currentState = scoring;
@@ -63,7 +71,7 @@ void prevState()
     }
 }
 
-double kp = 0.3;
+double kp = 0.2;
 
 void liftControl()
 {
