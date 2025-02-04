@@ -195,11 +195,43 @@ void pre_auton(void)
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void autmous(void)
-{
-  isAutmousRunning = true;
+void autmous(void) {
+  // ...robot code here...
 
-  inchDrive(-10, 80, 550, 10, 4);
+
+  isAutmousRunning = true;
+  thread liftThread = thread(moveLift);
+  gyroTurn(40, 600, 3);
+  currentState = alliance;
+  //alliance scored
+  wait(1500, msec);
+  inchDrive(-7, 80, 500, 10, 8);
+  gyroTurn(-65, 600, 3);
+  currentState = idle;
+  inchDrive(-10, 80, 600, 10, 5);
+  mogo_mech.set(true);
+  //mogo clamped
+  gyroTurn(-150, 600, 3);
+  inchDrive(15, 80, 600, 10, 5);
+  
+
+
+
+
+
+
+
+   liftThread.join();
+   isAutmousRunning = false;
+  
+
+
+  //OLD AUTON
+  /*d
+  isAutmousRunning = true;
+`/
+
+  in,,,..chDrive(-10, 80, 550, 10, 4);
   gyroTurn(98, 600, 2);
   currentState = alliance;
   wait(1100, msec);
@@ -232,6 +264,7 @@ void autmous(void)
   wait(800, msec);
   gyroTurn(60, 500);
   hook.stop();
+  */
 
 }
 
