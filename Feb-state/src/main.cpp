@@ -114,7 +114,7 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
   float accuracy = 0.5;
   timer t2;
 
-  while (t2.time(msec) < timeout)
+  while (fabs(error)>accuracy)
   {
     targetVelocity = kp * error;
     // Drives forward until actual distance meets target distance
@@ -125,6 +125,11 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
     error = targetDistanceInches - actualDistance;
     Brain.Screen.print(error);
     Brain.Screen.newLine();
+    if (t2.time(msec) > timeout)
+    {
+    break;
+    }
+    
   }
   driveBrake();
   wait(wait_ms, msec);
@@ -142,7 +147,7 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 
   timer t1;
 
-  while (t1.time(msec) < timeout)
+  while (fabs(error)>accuracy)
   {
     heading = Inertial.rotation(deg); // measure the heading of the robot
     error = targetHeading - heading;
@@ -154,6 +159,8 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
     //   driveVolts(speed, -speed, 10); //turn left at speed
     // }
     // wait(20,msec);
+    if(t1.time(msec) > timeout){
+        break;} 
   }
   driveBrake(); // stop the drive
 }
@@ -173,7 +180,7 @@ void pre_auton(void)
   hook.setMaxTorque(110, pct);
   hook.setVelocity(100, pct);
   Inertial.calibrate();
-  while (Inertial.isCalibrating())
+  while (Inertial.isCalibrating()) 
   {
     wait(10, msec);
   }
@@ -197,49 +204,10 @@ void autonomous(void)
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
 
-  // Alliance Ring
-  inchDrive(-3, 80, 600, 20, 7);
-  gyroTurn(42.8, 900, 1.3);
-  currentState = alliance;
-  wait(1, sec);
-
-  // Mogo
-  inchDrive(-19.5, 80, 800, 10, 3);
-  currentState = idle;
-  gyroTurn(0, 800, 1.9);
-  inchDrive(-27.5, 80, 800, 10, 2);
-  inchDrive(-8.5, 80, 400, 10, 1.3 );
-
-  mogo_mech.set(true);
-  wait(400, msec);
-
-  // 1st Ring
-  gyroTurn(-130.5, 1100, 1.1);
-  hook.spin(forward);
-  wait(150, msec);
-  inchDrive(25, 80, 800, 50, 4);
-  wait(200, msec);
-
-  // 2nd Ring
-  inchDrive(-9, 80, 500);
-  gyroTurn(-123, 600);
-  inchDrive(25, 80, 800, 10, 2);
-  wait(200, msec);
-
-  // Third Ring
-  inchDrive(-20, 80, 800);
-  gyroTurn(-71  , 750, 1.4);
-  currentState = scoring;
-  inchDrive(27, 50, 800, 10, 1.3);
-  // wait(500, msec);
-
-  // Ladder
-  gyroTurn(100, 1000);
-  // inchDrive(-25, 80, 950);
-  // currentState = alliance;
-  inchDrive(44, 80, 1200);
-  hook.stop();
-  
+  inchDrive(24, 80, 1000);
+  wait(500,msec);
+  gyroTurn(90,1000);
+  wait(500,msec);
 
   isAutonomousRunning = false;
   liftThread.join();
