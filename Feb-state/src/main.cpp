@@ -55,6 +55,7 @@ void setup() {
     verified = true;
     
   }
+  
 }
 
 void mogo_mech_control()
@@ -105,12 +106,12 @@ void driveBrake()
   right_motor_back.stop(brake);
 }
 
-void inchDrive(float targetDistanceInches, double targetVelocity, float timeout, float wait_ms = 10, float kp = 5.0)
+void inchDrive(float targetDistanceInches,  float timeout, float wait_ms = 10, float kp = 5.0)
 {
   left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
   float error = targetDistanceInches - actualDistance;
-
+  float targetVelocity;
   float accuracy = 0.5;
   timer t2;
 
@@ -135,34 +136,43 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
   wait(wait_ms, msec);
 }
 
+//99
+
 void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 {
 
   float heading = 0.0; // initialize a variable for heading
   // Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
   // Inertial.resetRotation();
+  //0
 
   float error = targetHeading - heading;
-  float accuracy = 2.0;
-
+  float olderror = error ;
+  float accuracy = 0.5;
+  int count=0;
+  float kd = 0.1;
   timer t1;
 
-  while (fabs(error)>accuracy)
+  while (fabs(error)>accuracy or count < 25)
   {
+    float speed = error * kp + kd * (error - olderror);
+    driveVolts(speed, -speed, 10);
     heading = Inertial.rotation(deg); // measure the heading of the robot
     error = targetHeading - heading;
-    float speed = error * kp;
-    // if(error>0){
-    driveVolts(speed, -speed, 10); // turn right at speed
-    // }
-    // else{
-    //   driveVolts(speed, -speed, 10); //turn left at speed
-    // }
-    // wait(20,msec);
+    olderror = error;
+    if (fabs(error)<accuracy){
+      count++;
+    }
+    else{
+      count=0;
+    }
+
     if(t1.time(msec) > timeout){
-        break;} 
+       break;
+    }
   }
   driveBrake(); // stop the drive
+  wait(50, msec);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -201,13 +211,36 @@ void pre_auton(void)
 
 void autonomous(void)
 {
+  float startHeading=0.0;
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
+  Inertial.setRotation(startHeading, degrees);
+  //inchDrive(24, 80, 1000);
+  currentState = alliance;
+  wait(500,msec);
+  inchDrive(-9, 3000, 100);
+  gyroTurn(-90,2000);
+  inchDrive(-20, 3000, 100);
+  mogo_mech.set(true);
+  //gyroTurn(-180,2000);
+  currentState = loading;
+  hook.spin(fwd, 100, pct);
 
-  inchDrive(24, 80, 1000);
+  //mogo clamped
   wait(500,msec);
-  gyroTurn(90,1000);
-  wait(500,msec);
+  gyroTurn(-180,2000);
+  inchDrive(20, 3000, 100);
+  //ring 1
+  gyroTurn(-215,2000);
+
+  currentState = loading2;
+  hook.stop();
+  inchDrive(35, 4000, 100);
+  hook.spin(fwd, 100, pct);
+  gyroTurn(270,2000);
+  //inchDrive(15, 1000, 100);
+  currentState = scoring;
+  // gyroTurn(jj0,9000);
 
   isAutonomousRunning = false;
   liftThread.join();
@@ -249,7 +282,7 @@ void usercontrol(void)
   right_motor_middle.setBrake(coast);
   right_motor_back.setBrake(coast);
 
-  hook.setBrake(coast);
+  //hook.setBrake(coast);
   LB.setBrake(hold);
 
   left_motor_front.setVelocity(100, pct);
