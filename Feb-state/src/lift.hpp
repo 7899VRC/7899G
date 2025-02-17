@@ -21,7 +21,7 @@ std::map<LiftStates, double> LiftValuesMap = {
 
 };
 
-LiftStates currentState = loading;
+LiftStates currentState = idle;
 
 void nextState()
 {

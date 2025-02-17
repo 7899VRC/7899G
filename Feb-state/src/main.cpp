@@ -157,7 +157,14 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
   {
     float speed = error * kp + kd * (error - olderror);
     driveVolts(speed, -speed, 10);
-    heading = Inertial.rotation(deg); // measure the heading of the robot
+    heading = Inertial.rotation(deg); 
+    if(heading > 360){
+      heading = heading -360;
+    }
+    if(heading < -360){
+      heading = heading + 360;
+    }
+    // measure the heading of the robot
     error = targetHeading - heading;
     olderror = error;
     if (fabs(error)<accuracy){
@@ -218,9 +225,9 @@ void autonomous(void)
   //inchDrive(24, 80, 1000);
   currentState = alliance;
   wait(500,msec);
-  inchDrive(-9, 3000, 100);
-  gyroTurn(-90,2000);
-  inchDrive(-20, 3000, 100);
+  inchDrive(-9, 1 000, 100);
+  gyroTurn(-90,1000);
+  inchDrive(-20, 2000, 100);
   mogo_mech.set(true);
   //gyroTurn(-180,2000);
   currentState = loading;
@@ -228,22 +235,37 @@ void autonomous(void)
 
   //mogo clamped
   wait(500,msec);
-  gyroTurn(-180,2000);
-  inchDrive(20, 3000, 100);
+  gyroTurn(-180,1000);
+  inchDrive(20, 1000, 100);
   //ring 1
-  gyroTurn(-215,2000);
-
-  currentState = loading2;
+  
+  gyroTurn(-210,1000);
+ 
+hook.stop();
+  inchDrive(34  , 2500, 100);
+   hook.spinFor(-100, deg);
   hook.stop();
-  inchDrive(35, 4000, 100);
+  gyroTurn(-270,1000);
+  currentState = loading2;
   hook.spin(fwd, 100, pct);
-  gyroTurn(270,2000);
-  //inchDrive(15, 1000, 100);
-  currentState = scoring;
+  inchDrive(20, 1500, 100);
+  currentState = scoring;  //score 0 deg  - wall stake
+  wait(500,msec);
+  inchDrive(-16, 2000, 100);
+  gyroTurn(-360,2000);
+  
+  inchDrive(40, 3000, 100, 5);
+  wait(250,msec);
+  inchDrive(16, 1500, 100, 8);
+  gyroTurn(-135,1500);
+  inchDrive(-12, 1500, 100);
+   mogo_mech.set(false);
   // gyroTurn(jj0,9000);
+liftThread.join();
+
 
   isAutonomousRunning = false;
-  liftThread.join();
+  
 }
 // ..........................................................................
 // Wait a moment
