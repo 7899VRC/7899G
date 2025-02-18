@@ -10,8 +10,9 @@
 
 // #include "robot.hpp"
 #include "robot.h"
-#include "brainDisplay.hpp"
+
 #include "lift.hpp"
+#include <iostream>
 
 const double PI = 3.1415265;
 const double D = 2.75;
@@ -21,7 +22,8 @@ static bool verified = false;
 
 bool isAutonomousRunning = false;
 
-void setup() {
+void setup()
+{
   // if (Controller.ButtonY.pressing()) {
   //   step1 = true;
   // }
@@ -36,26 +38,26 @@ void setup() {
   //   }
   // }
 
-
   static bool step1_complete = false;
   static bool step2_complete = false;
 
   // Check if ButtonY is pressed for step1
-  if (Controller.ButtonY.pressing() && !step1_complete) {
+  if (Controller.ButtonY.pressing() && !step1_complete)
+  {
     step1_complete = true;
   }
 
   // Check if ButtonLeft is pressed for step2, but only if step1 is complete
-  if (Controller.ButtonLeft.pressing() && step1_complete && !step2_complete) {
+  if (Controller.ButtonLeft.pressing() && step1_complete && !step2_complete)
+  {
     step2_complete = true;
   }
 
   // Check if ButtonRight is pressed to verify, but only if step2 is complete
-  if (Controller.ButtonRight.pressing() && step2_complete && !verified) {
+  if (Controller.ButtonRight.pressing() && step2_complete && !verified)
+  {
     verified = true;
-    
   }
-  
 }
 
 void mogo_mech_control()
@@ -70,8 +72,10 @@ void hitler_mech_control()
   hitler_mech.set(!hitler_mech.value());
 }
 
-void moveLift() {
-  while (isAutonomousRunning) {
+void moveLift()
+{
+  while (isAutonomousRunning)
+  {
     // Add the logic for controlling the lift here
     // For example:
     liftControl();
@@ -106,7 +110,7 @@ void driveBrake()
   right_motor_back.stop(brake);
 }
 
-void inchDrive(float targetDistanceInches,  float timeout, float wait_ms = 10, float kp = 5.0)
+void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 5.0)
 {
   left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
@@ -115,12 +119,12 @@ void inchDrive(float targetDistanceInches,  float timeout, float wait_ms = 10, f
   float accuracy = 0.5;
   timer t2;
 
-  while (fabs(error)>accuracy)
+  while (fabs(error) > accuracy)
   {
     targetVelocity = kp * error;
     // Drives forward until actual distance meets target distance
 
-    driveVolts(targetVelocity, targetVelocity, 100);
+    driveVolts(targetVelocity, targetVelocity, 10);
 
     actualDistance = left_motor_front.position(rev) * PI * D * G;
     error = targetDistanceInches - actualDistance;
@@ -128,15 +132,14 @@ void inchDrive(float targetDistanceInches,  float timeout, float wait_ms = 10, f
     Brain.Screen.newLine();
     if (t2.time(msec) > timeout)
     {
-    break;
+      break;
     }
-    
   }
   driveBrake();
   wait(wait_ms, msec);
 }
 
-//99
+// 99
 
 void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 {
@@ -144,40 +147,57 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
   float heading = 0.0; // initialize a variable for heading
   // Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
   // Inertial.resetRotation();
-  //0
+  // 0
 
   float error = targetHeading - heading;
-  float olderror = error ;
+  float olderror = error;
   float accuracy = 0.5;
-  int count=0;
+  int count = 0;
   float kd = 0.1;
   timer t1;
 
-  while (fabs(error)>accuracy or count < 25)
+  while (fabs(error) > accuracy or count < 25)
   {
     float speed = error * kp + kd * (error - olderror);
     driveVolts(speed, -speed, 10);
-    heading = Inertial.rotation(deg); 
-    if(heading > 360){
-      heading = heading -360;
-    }
-    if(heading < -360){
-      heading = heading + 360;
-    }
+    heading = Inertial.rotation(deg);
+    std::cout << heading << "\n";
+    // if (heading > 360)
+    // {
+    //   heading = heading - 360;
+    // }
+    // if (heading < -360)
+    // {
+    //   heading = heading + 360;
+    // }
     // measure the heading of the robot
     error = targetHeading - heading;
-    olderror = error;
-    if (fabs(error)<accuracy){
-      count++;
+
+    if (error > 180)
+    {
+      error = error - 360;
     }
-    else{
-      count=0;
+    if (error < -180)
+    {
+      error = error + 360;
     }
 
-    if(t1.time(msec) > timeout){
-       break;
+    olderror = error;
+    if (fabs(error) < accuracy)
+    {
+      count++;
+    }
+    else
+    {
+      count = 0;
+    }
+
+    if (t1.time(msec) > timeout)
+    {
+      break;
     }
   }
+  std::cout << "Next Turn: " << "\n";
   driveBrake(); // stop the drive
   wait(50, msec);
 }
@@ -197,7 +217,7 @@ void pre_auton(void)
   hook.setMaxTorque(110, pct);
   hook.setVelocity(100, pct);
   Inertial.calibrate();
-  while (Inertial.isCalibrating()) 
+  while (Inertial.isCalibrating())
   {
     wait(10, msec);
   }
@@ -218,54 +238,57 @@ void pre_auton(void)
 
 void autonomous(void)
 {
-  float startHeading=0.0;
+  float startHeading = 0.0;
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
   Inertial.setRotation(startHeading, degrees);
-  //inchDrive(24, 80, 1000);
+  // inchDrive(24, 80, 1000);
   currentState = alliance;
-  wait(500,msec);
-  inchDrive(-9, 1 000, 100);
-  gyroTurn(-90,1000);
+  wait(500, msec);
+  inchDrive(-9, 1000, 100);
+  gyroTurn(-90, 1000);
   inchDrive(-20, 2000, 100);
   mogo_mech.set(true);
-  //gyroTurn(-180,2000);
+  // gyroTurn(-180,2000);
   currentState = loading;
   hook.spin(fwd, 100, pct);
-
-  //mogo clamped
-  wait(500,msec);
-  gyroTurn(-180,1000);
+//f
+  // mogo clamped
+  wait(500, msec);
+  gyroTurn(-180, 1000);
   inchDrive(20, 1000, 100);
-  //ring 1
-  
-  gyroTurn(-210,1000);
- 
-hook.stop();
-  inchDrive(34  , 2500, 100);
-   hook.spinFor(-100, deg);
+  // ring 1
+
+  gyroTurn(-210, 1000);
+
   hook.stop();
-  gyroTurn(-270,1000);
+  inchDrive(36, 3000);
+  hook.spinFor(-100, deg);
+
+  gyroTurn(-270, 1000);
   currentState = loading2;
   hook.spin(fwd, 100, pct);
-  inchDrive(20, 1500, 100);
-  currentState = scoring;  //score 0 deg  - wall stake
-  wait(500,msec);
-  inchDrive(-16, 2000, 100);
-  gyroTurn(-360,2000);
-  
-  inchDrive(40, 3000, 100, 5);
-  wait(250,msec);
-  inchDrive(16, 1500, 100, 8);
-  gyroTurn(-135,1500);
-  inchDrive(-12, 1500, 100);
-   mogo_mech.set(false);
-  // gyroTurn(jj0,9000);
-liftThread.join();
+  inchDrive(20, 1500, 10);
+  currentState = scoring; // score 0 deg  - wall stake
+  wait(500, msec);
+  inchDrive(-16, 2000, 10);
+  gyroTurn(0, 2000);
 
+  inchDrive(40, 3000, 10, 5);
+  wait(250, msec);
+  inchDrive(16, 1500, 10, 8);
+  gyroTurn(-135, 1500);
+  inchDrive(-12, 1500, 10);
+  mogo_mech.set(false);
+  wait(100, msec);
+  inchDrive(20, 1500, 10);
+  gyroTurn(90, 1500);
+  inchDrive(-55, 3000, 10, 3);
+  mogo_mech.set(false);
+  // gyroTurn(jj0,9000);
+  liftThread.join();
 
   isAutonomousRunning = false;
-  
 }
 // ..........................................................................
 // Wait a moment
@@ -285,7 +308,7 @@ void usercontrol(void)
 {
 
   Controller.ButtonB.pressed(mogo_mech_control);
-  Controller.ButtonUp.pressed(hitler_mech_control); 
+  Controller.ButtonUp.pressed(hitler_mech_control);
   Controller.ButtonR1.pressed(nextState);
   Controller.ButtonR2.pressed(prevState);
   // User control code here, inside the loop
@@ -304,7 +327,7 @@ void usercontrol(void)
   right_motor_middle.setBrake(coast);
   right_motor_back.setBrake(coast);
 
-  //hook.setBrake(coast);
+  // hook.setBrake(coast);
   LB.setBrake(hold);
 
   left_motor_front.setVelocity(100, pct);
@@ -321,7 +344,8 @@ void usercontrol(void)
   {
     setup();
     verified = true;
-    if (verified == true) {
+    if (verified == true)
+    {
       double forward = Controller.Axis3.position();
       double turn = Controller.Axis1.position();
 
@@ -373,17 +397,14 @@ int main()
   pre_auton();
   wait(10, msec);
 
-  drawLogo();
+  
 
   // Prevent main from exiting with an infinite loop.
   while (true)
   {
     int idle = 2;
 
-    brain_screen();
-    controllerScreen();
+
     wait(100, msec);
   }
 }
-
-
