@@ -110,7 +110,7 @@ void driveBrake()
   right_motor_back.stop(brake);
 }
 
-void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 5.0)
+void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 6.0)
 {
   left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
@@ -247,7 +247,7 @@ void autonomous(void)
   wait(500, msec);
   inchDrive(-9, 1000, 100);
   gyroTurn(-90, 1000);
-  inchDrive(-20, 2000, 100);
+  inchDrive(-20, 2000, 100, 5);
   mogo_mech.set(true);
   // gyroTurn(-180,2000);
   currentState = loading;
@@ -262,29 +262,33 @@ void autonomous(void)
   gyroTurn(-210, 1000);
 
   hook.stop();
-  inchDrive(36, 3000);
+  inchDrive(37.5, 3000);
   hook.spinFor(-100, deg);
 
   gyroTurn(-270, 1000);
   currentState = loading2;
   hook.spin(fwd, 100, pct);
-  inchDrive(20, 1500, 10);
+  inchDrive(22, 1500, 10);
   currentState = scoring; // score 0 deg  - wall stake
   wait(500, msec);
-  inchDrive(-16, 2000, 10);
+  inchDrive(-14, 2000, 10);
   gyroTurn(0, 2000);
 
   inchDrive(40, 3000, 10, 5);
   wait(250, msec);
   inchDrive(16, 1500, 10, 8);
-  gyroTurn(-135, 1500);
-  inchDrive(-12, 1500, 10);
+  gyroTurn(-115, 1500);
+  inchDrive(-15, 1500, 10, 5);
   mogo_mech.set(false);
   wait(100, msec);
-  inchDrive(20, 1500, 10);
+  inchDrive(26, 1500, 10);
   gyroTurn(90, 1500);
-  inchDrive(-55, 3000, 10, 3);
-  mogo_mech.set(false);
+  Inertial.setRotation(90,degrees);
+  inchDrive(-54, 3000, 10, 3);
+  mogo_mech.set(true);
+  wait(100, msec);
+  gyroTurn(180, 1500);
+  inchDrive(10, 1500, 10, 8);
   // gyroTurn(jj0,9000);
   liftThread.join();
 
