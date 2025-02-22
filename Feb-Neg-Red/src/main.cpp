@@ -318,21 +318,22 @@ void autonomous(void)
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
   Inertial.setRotation(startHeading, degrees);
-  gyroTurn(34, 500);
+  gyroTurn(-34, 500);
   inchDrive(5, 500, 10, 8);
   currentState = alliance;
   wait(500, msec);
   inchDrive(-20, 1500, 10);
-  gyroTurn(-0, 500);
+  gyroTurn(0, 500);
   inchDrive(-16, 1000, 10);
   mogo_mech.set(true);
   currentState = idle;
   hook.spin(fwd, 100, pct);
   wait(500, msec);
-  gyroTurn(-180, 1000);
-  arcTurnLeft(20, 90, 60);
+  gyroTurn(180, 1000);
+  arcTurnLeft(25, 90, 60);
+  inchDrive(10, 500, 10, 8);
   wait(500, msec);
-  arcTurnLeft(20, -90, 60);
+  arcTurnLeft(25, -90, 60);
   //inchDrive(20,800, 10);
 
   liftThread.join();
