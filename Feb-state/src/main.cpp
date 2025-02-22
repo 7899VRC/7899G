@@ -17,6 +17,7 @@
 const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
+float W=14.0;  // width of rovot track
 
 static bool verified = false;
 
@@ -99,6 +100,41 @@ void driveVolts(int lspeed, int rspeed, int wt)
   right_motor_back.spin(fwd, rspeed, voltageUnits::mV);
   wait(wt, msec);
 }
+
+
+void arcTurn(float rd, float angle, float maxSpeed=100){
+  float kp=1.0;
+  float kd=1.0;
+  float targetArcLength=rd*2*PI*angle/360.0;
+  float arcLength=0.0;
+  float error=targetArcLength-arcLength;
+  float oldError=error;
+  float lspeed=maxSpeed*angle/fabs(angle);
+  float rspeed=lspeed*(rd-W) * rd;
+  float accuracy= 0.2;
+  left_motor_front.setPosition(0.0,rev);
+  left_motor_middle.setPosition(0.0,rev);
+  left_motor_back.setPosition(0.0,rev);
+  right_motor_front.setPosition(0.0,rev);
+  right_motor_middle.setPosition(0.0,rev);
+  right_motor_back.setPosition(0.0,rev);
+  while(fabs(error)>=accuracy){
+    driveVolts(lspeed, rspeed,10);
+    arcLength=LM.position(rev)*G*PI*D;
+  oldError=error;
+  error+targetArcLength-arcLength;
+  lspeed=kp*error+kd+(error-oldError);
+  if (fabs(lspeed)>=maxSpeed) lspeed=maxSpeed*error/fabs(error);
+  rspeed=lspeed*(rd-W)/rd;
+  }
+  driveBrake();
+//working on arc turn
+  }
+
+
+
+
+
 
 void driveBrake()
 {
