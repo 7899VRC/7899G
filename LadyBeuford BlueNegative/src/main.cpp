@@ -127,7 +127,7 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
     actualDistance = left_motor_front.position(rev) * PI * D * G;
     error = targetDistanceInches - actualDistance;
     Brain.Screen.print(error);
-    Brain.Screen.newLine();
+    Brain.Screen.newLine();x1
   }
   driveBrake();
   wait(wait_ms, msec);

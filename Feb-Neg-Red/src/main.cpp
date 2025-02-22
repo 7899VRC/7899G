@@ -17,7 +17,7 @@
 const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
-const float W=11.5;  // width of rovot track
+const float W=13.5;  // width of rovot track
 
 static bool verified = false;
 
@@ -119,7 +119,7 @@ void driveBrake()
   right_motor_back.stop(brake);
 }
 
-void arcTurn(float rd, float angle, float maxSpeed=100){
+void arcTurnRight(float rd, float angle, float maxSpeed=100){
   float kp=5.0;
   float kd=0;
   float targetArcLength=rd*2*PI*angle/360.0;
@@ -138,11 +138,48 @@ void arcTurn(float rd, float angle, float maxSpeed=100){
   while(fabs(error)>=accuracy){
     driveVolts(lspeed, rspeed,10);
     arcLength=left_motor_middle.position(rev)*G*PI*D;
-  oldError=error;
-  error=targetArcLength-arcLength;
-  lspeed=kp*error+kd*(error-oldError);
-  if (fabs(lspeed)>=maxSpeed) lspeed=maxSpeed*error/fabs(error);
-  rspeed=lspeed*(rd-W)/rd;
+    oldError=error;
+    error=targetArcLength-arcLength;
+    lspeed=kp*error+kd*(error-oldError);
+    
+    if (fabs(lspeed)>=maxSpeed) {
+      lspeed=maxSpeed*error/fabs(error);
+    }
+    
+    rspeed=lspeed*(rd-W)/rd;
+  }
+  driveBrake();
+//working on
+  }
+
+void arcTurnLeft(float rd, float angle, float maxSpeed=100){
+  float kp=5.0;
+  float kd=0;
+  float targetArcLength=rd*2*PI*angle/360.0;
+  float arcLength=0.0;
+  float error=targetArcLength-arcLength;
+  float oldError=error;
+  float rspeed=maxSpeed*angle/fabs(angle);
+  float lspeed=rspeed*(rd-W) * rd;
+  float accuracy= 1;
+  left_motor_front.setPosition(0.0,rev);
+  left_motor_middle.setPosition(0.0,rev);
+  left_motor_back.setPosition(0.0,rev);
+  right_motor_front.setPosition(0.0,rev);
+  right_motor_middle.setPosition(0.0,rev);
+  right_motor_back.setPosition(0.0,rev);
+  while(fabs(error)>=accuracy){
+    driveVolts(lspeed, rspeed, 10);
+    arcLength=right_motor_middle.position(rev)*G*PI*D;
+    oldError=error;
+    error=targetArcLength-arcLength;
+    rspeed=kp*error+kd*(error-oldError);
+    
+    if (fabs(rspeed)>=maxSpeed) {
+      rspeed=maxSpeed*error/fabs(error);
+    }
+    
+    lspeed=rspeed*(rd-W)/rd;
   }
   driveBrake();
 //working on
@@ -281,19 +318,21 @@ void autonomous(void)
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
   Inertial.setRotation(startHeading, degrees);
-  // gyroTurn(34, 500);
-  // inchDrive(5, 500, 10, 8);
-  // currentState = alliance;
-  // wait(500, msec);
-  // inchDrive(-20, 1500, 10);
-  // gyroTurn(-0, 500);
-  // inchDrive(-16, 1000, 10);
-  // mogo_mech.set(true);
-  // currentState = idle;
-  // hook.spin(fwd, 100, pct);
-  // wait(500, msec);
-  // gyroTurn(-180, 1000);
-  arcTurn(20, 90, 60);
+  gyroTurn(34, 500);
+  inchDrive(5, 500, 10, 8);
+  currentState = alliance;
+  wait(500, msec);
+  inchDrive(-20, 1500, 10);
+  gyroTurn(-0, 500);
+  inchDrive(-16, 1000, 10);
+  mogo_mech.set(true);
+  currentState = idle;
+  hook.spin(fwd, 100, pct);
+  wait(500, msec);
+  gyroTurn(-180, 1000);
+  arcTurnLeft(20, 90, 60);
+  wait(500, msec);
+  arcTurnLeft(20, -90, 60);
   //inchDrive(20,800, 10);
 
   liftThread.join();
