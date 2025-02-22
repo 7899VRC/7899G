@@ -17,7 +17,7 @@
 const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
-const float W=14.0;  // width of rovot track
+const float W=11.5;  // width of rovot track
 
 static bool verified = false;
 
@@ -120,15 +120,15 @@ void driveBrake()
 }
 
 void arcTurn(float rd, float angle, float maxSpeed=100){
-  float kp=1.0;
-  float kd=1.0;
+  float kp=5.0;
+  float kd=0;
   float targetArcLength=rd*2*PI*angle/360.0;
   float arcLength=0.0;
   float error=targetArcLength-arcLength;
   float oldError=error;
   float lspeed=maxSpeed*angle/fabs(angle);
   float rspeed=lspeed*(rd-W) * rd;
-  float accuracy= 0.2;
+  float accuracy= 1;
   left_motor_front.setPosition(0.0,rev);
   left_motor_middle.setPosition(0.0,rev);
   left_motor_back.setPosition(0.0,rev);
@@ -139,8 +139,8 @@ void arcTurn(float rd, float angle, float maxSpeed=100){
     driveVolts(lspeed, rspeed,10);
     arcLength=left_motor_middle.position(rev)*G*PI*D;
   oldError=error;
-  error+targetArcLength-arcLength;
-  lspeed=kp*error+kd+(error-oldError);
+  error=targetArcLength-arcLength;
+  lspeed=kp*error+kd*(error-oldError);
   if (fabs(lspeed)>=maxSpeed) lspeed=maxSpeed*error/fabs(error);
   rspeed=lspeed*(rd-W)/rd;
   }
@@ -149,7 +149,7 @@ void arcTurn(float rd, float angle, float maxSpeed=100){
   }
 
 
-void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 6.0)
+void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 7.0)
 {
   left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
@@ -180,7 +180,7 @@ void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, fl
 
 // 99
 
-void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
+void gyroTurn(float targetHeading, int timeout, double kp = 2)
 {
 
   float heading = 0.0; // initialize a variable for heading
@@ -192,7 +192,7 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
   float olderror = error;
   float accuracy = 0.5;
   int count = 0;
-  float kd = 0.1;
+  float kd = 0.3;
   timer t1;
 
   while (fabs(error) > accuracy or count < 25)
@@ -281,54 +281,21 @@ void autonomous(void)
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
   Inertial.setRotation(startHeading, degrees);
-  // inchDrive(24, 80, 1000);
-  currentState = alliance;
-  wait(500, msec);
-  inchDrive(-9, 1000, 100);
-  gyroTurn(-90, 1000);
-  inchDrive(-20, 2000, 100, 5);
-  mogo_mech.set(true);
-  // gyroTurn(-180,2000);
-  currentState = loading;
-  hook.spin(fwd, 100, pct);
-//f
-  // mogo clamped
-  wait(500, msec);
-  gyroTurn(-180, 1000);
-  inchDrive(20, 1000, 100);
-  // ring 1
+  // gyroTurn(34, 500);
+  // inchDrive(5, 500, 10, 8);
+  // currentState = alliance;
+  // wait(500, msec);
+  // inchDrive(-20, 1500, 10);
+  // gyroTurn(-0, 500);
+  // inchDrive(-16, 1000, 10);
+  // mogo_mech.set(true);
+  // currentState = idle;
+  // hook.spin(fwd, 100, pct);
+  // wait(500, msec);
+  // gyroTurn(-180, 1000);
+  arcTurn(20, 90, 60);
+  //inchDrive(20,800, 10);
 
-  gyroTurn(-210, 1000);
-
-  hook.stop();
-  inchDrive(37.5, 3000);
-  hook.spinFor(-100, deg);
-
-  gyroTurn(-270, 1000);
-  currentState = loading2;
-  hook.spin(fwd, 100, pct);
-  inchDrive(22, 1500, 10);
-  currentState = scoring; // score 0 deg  - wall stake
-  wait(500, msec);
-  inchDrive(-14, 2000, 10);
-  gyroTurn(0, 2000);
-
-  inchDrive(40, 3000, 10, 5);
-  wait(250, msec);
-  inchDrive(16, 1500, 10, 8);
-  gyroTurn(-115, 1500);
-  inchDrive(-15, 1500, 10, 5);
-  mogo_mech.set(false);
-  wait(100, msec);
-  inchDrive(26, 1500, 10);
-  gyroTurn(90, 1500);
-  Inertial.setRotation(90,degrees);
-  inchDrive(-54, 3000, 10, 3);
-  mogo_mech.set(true);
-  wait(100, msec);
-  gyroTurn(180, 1500);
-  inchDrive(10, 1500, 10, 8);
-  // gyroTurn(jj0,9000);
   liftThread.join();
 
   isAutonomousRunning = false;
