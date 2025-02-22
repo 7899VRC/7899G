@@ -1,0 +1,19 @@
+{
+	"extension": {
+		"version": "0.6.1",
+		"json": 2
+	},
+	"project": {
+		"name": "BN_1A_2M_1W",
+		"description": "Blue Negative, 1R on Alliance, 2R on Mogo, 1R on Wall",
+		"creationDate": "Tue, 03 Dec 2024 01:07:30 GMT",
+		"platform": "V5",
+		"language": "cpp",
+		"slot": 2,
+		"sdkVersion": "V5_20240802_15_00_00",
+		"cpp": {
+			"includePath": [],
+			"printf_float": true
+		}
+	}
+}

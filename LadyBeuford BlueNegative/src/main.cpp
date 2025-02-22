@@ -16,11 +16,12 @@ const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
 
-static bool verified = false;
+static bool setuped = true;
 
-bool isAutonomousRunning = false;
+bool isAutmousRunning = false;
 
-void setup() {
+void setup()
+{
   // if (Controller.ButtonY.pressing()) {
   //   step1 = true;
   // }
@@ -31,28 +32,29 @@ void setup() {
   // }
   // if (Controller.ButtonRight.pressing()) {
   //   if (step2 == true) {
-  //     verified = true;
+  //     setuped = true;
   //   }
   // }
-
 
   static bool step1_complete = false;
   static bool step2_complete = false;
 
   // Check if ButtonY is pressed for step1
-  if (Controller.ButtonY.pressing() && !step1_complete) {
+  if (Controller.ButtonL1.pressing() && !step1_complete)
+  {
     step1_complete = true;
   }
 
   // Check if ButtonLeft is pressed for step2, but only if step1 is complete
-  if (Controller.ButtonLeft.pressing() && step1_complete && !step2_complete) {
+  if (Controller.ButtonLeft.pressing() && step1_complete && !step2_complete)
+  {
     step2_complete = true;
   }
 
   // Check if ButtonRight is pressed to verify, but only if step2 is complete
-  if (Controller.ButtonRight.pressing() && step2_complete && !verified) {
-    verified = true;
-    
+  if (Controller.ButtonRight.pressing() && step2_complete && !setuped)
+  {
+    setuped = true;
   }
 }
 
@@ -62,8 +64,16 @@ void mogo_mech_control()
   mogo_mech.set(!mogo_mech.value());
 }
 
-void moveLift() {
-  while (isAutonomousRunning) {
+void hitler_mech_control()
+{
+
+  hitler_mech.set(!hitler_mech.value());
+}
+
+void moveLift()
+{
+  while (isAutmousRunning)
+  {
     // Add the logic for controlling the lift here
     // For example:
     liftControl();
@@ -185,42 +195,81 @@ void pre_auton(void)
 /*  You must modify the code to add your own robot specific commands here.   */
 /*---------------------------------------------------------------------------*/
 
-void autonomous(void)
-{
+void autmous(void) {
+  // ...robot code here...
 
-  isAutonomousRunning = true;
+
+  isAutmousRunning = true;
   thread liftThread = thread(moveLift);
-
-
-  
+  gyroTurn(40, 600, 3);
   currentState = alliance;
   //alliance scored
-  wait(1000, msec);
-  inchDrive(-12, 80, 500, 5, 3);
-  wait(1, sec);
-  gyroTurn(90, 900, 1);
-  inchDrive(-53, 80, 500, 1, 1);
+  wait(1500, msec);
+  inchDrive(-7, 80, 500, 10, 8);
+  gyroTurn(-65, 600, 3);
   currentState = idle;
+  inchDrive(-10, 80, 600, 10, 5);
   mogo_mech.set(true);
   //mogo clamped
-  hook.spin(fwd, 100, pct);
-   inchDrive(-6, 80, 500, 5, 3);
-  wait(100, msec);
-  gyroTurn(90, 900, 1);
-  inchDrive(35, 80, 500, 2, 2);
-  inchDrive(20, 80, 500, 1, 1);
-  gyroTurn(23, 900, 1);
-  //30 == 48
-  inchDrive(90, 80, 1000,1, 1);
- 
+  gyroTurn(-150, 600, 3);
+  inchDrive(15, 80, 600, 10, 5);
   
 
+
+
+
+
+
+
+   liftThread.join();
+   isAutmousRunning = false;
   
-  
+
+
+  //OLD AUTON
+  /*d
+  isAutmousRunning = true;
+`/
+
+  in,,,..chDrive(-10, 80, 550, 10, 4);
+  gyroTurn(98, 600, 2);
+  currentState = alliance;
+  wait(1100, msec);
+  // Alliance Scored
+
+  inchDrive(-5, 80, 500, 10, 8);
+  gyroTurn(-20, 500);
+  inchDrive(-40, 80, 1000, 20, 2);
+  mogo_mech.set(true);
+  // Mogo Aquired
+
+  currentState = idle;
+  wait(600, msec);
+  gyroTurn(-115, 1000, 1.5);
+  hook.spin(fwd);
+  inchDrive(51, 80, 850, 10, 3);
+  // First Ring
+
+  wait(100, msec);
+  gyroTurn(-95, 800, 0.8);
+  inchDrive(10, 80, 800);
+  // Second Ring
+
+  wait(180, msec);
+  inchDrive(-1, 80, 800);
+  gyroTurn(19, 500, 1.5);
+  inchDrive(15, 80, 500);
+  // Third Ring
+
+  wait(800, msec);
+  gyroTurn(60, 500);
+  hook.stop();
+  */
 
   isAutonomousRunning = false;
   liftThread.join();
 }
+
 // ..........................................................................
 // Wait a moment
 // ..........................................................................
@@ -239,6 +288,7 @@ void usercontrol(void)
 {
 
   Controller.ButtonX.pressed(mogo_mech_control);
+  Controller.ButtonUp.pressed(hitler_mech_control);
   Controller.ButtonR1.pressed(nextState);
   Controller.ButtonR2.pressed(prevState);
   // User control code here, inside the loop
@@ -273,8 +323,8 @@ void usercontrol(void)
   while (true)
   {
     setup();
-    verified = true;
-    if (verified == true) {
+    if (setuped == true)
+    {
       double forward = Controller.Axis3.position();
       double turn = Controller.Axis1.position();
 
@@ -319,7 +369,7 @@ int main()
 {
   // Set up callbacks for autonomous and driver control periods.
 
-  Competition.autonomous(autonomous);
+  Competition.autonomous(autmous);
   Competition.drivercontrol(usercontrol);
 
   // Run the pre-autonomous function.

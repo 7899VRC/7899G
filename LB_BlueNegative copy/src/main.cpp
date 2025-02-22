@@ -1,3 +1,4 @@
+
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -60,6 +61,12 @@ void mogo_mech_control()
 {
 
   mogo_mech.set(!mogo_mech.value());
+}
+
+void hitler_mech_control()
+{
+
+  hitler_mech.set(!hitler_mech.value());
 }
 
 void moveLift() {
@@ -192,31 +199,35 @@ void autonomous(void)
   thread liftThread = thread(moveLift);
 
 
-  
+  inchDrive(-4, 80, 300, 20);
+  gyroTurn(43, 700, 1);
   currentState = alliance;
-  //alliance scored
-  wait(1000, msec);
-  inchDrive(-12, 80, 500, 5, 3);
   wait(1, sec);
-  gyroTurn(90, 900, 1);
-  inchDrive(-53, 80, 500, 1, 1);
+  inchDrive(-20, 80, 800);
   currentState = idle;
+  gyroTurn(-43, 700, 1);
+  inchDrive(-25, 80, 800);
   mogo_mech.set(true);
-  //mogo clamped
-  hook.spin(fwd, 100, pct);
-   inchDrive(-6, 80, 500, 5, 3);
-  wait(100, msec);
-  gyroTurn(90, 900, 1);
-  inchDrive(35, 80, 500, 2, 2);
-  inchDrive(20, 80, 500, 1, 1);
-  gyroTurn(23, 900, 1);
-  //30 == 48
-  inchDrive(90, 80, 1000,1, 1);
- 
+  wait(500, msec);
+  gyroTurn(-90, 600);
+  hook.spin(forward);
+  inchDrive(25, 80, 800, 50);
+  gyroTurn(-100, 500);
+  inchDrive(20, 80, 800);
   
-
-  
-  
+  // wait(1, sec);
+  // // inchDrive(-1, 80, 500, 10, 8);
+  // gyroTurn(-18, 500);
+  // inchDrive(-41, 80, 1200, 10, 2);
+  // currentState = idle;
+  // mogo_mech.set(true);
+  // wait(500, msec);
+  // gyroTurn(-135, 800);
+  // hook.spin(fwd);
+  // inchDrive(27, 80, 800, 10);
+  // wait(800, msec);
+  // gyroTurn(-80, 600);
+  // inchDrive(21, 80, 800);
 
   isAutonomousRunning = false;
   liftThread.join();
@@ -239,6 +250,7 @@ void usercontrol(void)
 {
 
   Controller.ButtonX.pressed(mogo_mech_control);
+  Controller.ButtonUp.pressed(hitler_mech_control); 
   Controller.ButtonR1.pressed(nextState);
   Controller.ButtonR2.pressed(prevState);
   // User control code here, inside the loop
@@ -338,3 +350,5 @@ int main()
     wait(100, msec);
   }
 }
+
+

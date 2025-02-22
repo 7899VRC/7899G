@@ -1,3 +1,4 @@
+
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -62,6 +63,12 @@ void mogo_mech_control()
   mogo_mech.set(!mogo_mech.value());
 }
 
+void hitler_mech_control()
+{
+
+  hitler_mech.set(!hitler_mech.value());
+}
+
 void moveLift() {
   while (isAutonomousRunning) {
     // Add the logic for controlling the lift here
@@ -123,12 +130,12 @@ void inchDrive(float targetDistanceInches, double targetVelocity, float timeout,
   wait(wait_ms, msec);
 }
 
-void gyroTurn(float targetHeading, int timeout, double kp = 2)
+void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 {
 
   float heading = 0.0; // initialize a variable for heading
   // Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
-  Inertial.resetRotation();
+  // Inertial.resetRotation();
 
   float error = targetHeading - heading;
   float accuracy = 2.0;
@@ -187,35 +194,51 @@ void pre_auton(void)
 
 void autonomous(void)
 {
-
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
 
-
-  
+  // Alliance Ring
+  inchDrive(-3, 80, 600, 20, 7);
+  gyroTurn(42.8, 900, 1.3);
   currentState = alliance;
-  //alliance scored
-  wait(1000, msec);
-  inchDrive(-12, 80, 500, 5, 3);
   wait(1, sec);
-  gyroTurn(90, 900, 1);
-  inchDrive(-53, 80, 500, 1, 1);
-  currentState = idle;
-  mogo_mech.set(true);
-  //mogo clamped
-  hook.spin(fwd, 100, pct);
-   inchDrive(-6, 80, 500, 5, 3);
-  wait(100, msec);
-  gyroTurn(90, 900, 1);
-  inchDrive(35, 80, 500, 2, 2);
-  inchDrive(20, 80, 500, 1, 1);
-  gyroTurn(23, 900, 1);
-  //30 == 48
-  inchDrive(90, 80, 1000,1, 1);
- 
-  
 
-  
+  // Mogo
+  inchDrive(-19.5, 80, 800, 10, 3);
+  currentState = idle;
+  gyroTurn(0, 800, 1.9);
+  inchDrive(-27.5, 80, 800, 10, 2);
+  inchDrive(-8.5, 80, 400, 10, 1.3 );
+
+  mogo_mech.set(true);
+  wait(400, msec);
+
+  // 1st Ring
+  gyroTurn(-130.5, 1100, 1.1);
+  hook.spin(forward);
+  wait(150, msec);
+  inchDrive(25, 80, 800, 50, 4);
+  wait(200, msec);
+
+  // 2nd Ring
+  inchDrive(-9, 80, 500);
+  gyroTurn(-123, 600);
+  inchDrive(25, 80, 800, 10, 2);
+  wait(200, msec);
+
+  // Third Ring
+  inchDrive(-20, 80, 800);
+  gyroTurn(-71  , 750, 1.4);
+  currentState = scoring;
+  inchDrive(27, 50, 800, 10, 1.3);
+  // wait(500, msec);
+
+  // Ladder
+  gyroTurn(100, 1000);
+  // inchDrive(-25, 80, 950);
+  // currentState = alliance;
+  inchDrive(44, 80, 1200);
+  hook.stop();
   
 
   isAutonomousRunning = false;
@@ -238,7 +261,8 @@ void autonomous(void)
 void usercontrol(void)
 {
 
-  Controller.ButtonX.pressed(mogo_mech_control);
+  Controller.ButtonB.pressed(mogo_mech_control);
+  Controller.ButtonUp.pressed(hitler_mech_control); 
   Controller.ButtonR1.pressed(nextState);
   Controller.ButtonR2.pressed(prevState);
   // User control code here, inside the loop
@@ -338,3 +362,5 @@ int main()
     wait(100, msec);
   }
 }
+
+
