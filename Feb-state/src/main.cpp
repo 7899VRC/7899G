@@ -291,17 +291,14 @@ void autonomous(void)
   // gyroTurn(-180,2000);
   currentState = loading;
   hook.spin(fwd, 100, pct);
-//f
   // mogo clamped
-  wait(500, msec);
+  wait(200, msec);
   gyroTurn(-180, 1000);
   inchDrive(20, 1000, 100);
   // ring 1
-
   gyroTurn(-210, 1000);
-
   hook.stop();
-  inchDrive(37.5, 3000);
+  inchDrive(38, 3000);
   hook.spinFor(-100, deg);
 
   gyroTurn(-270, 1000);
@@ -313,23 +310,31 @@ void autonomous(void)
   inchDrive(-14, 2000, 10);
   gyroTurn(0, 2000);
 
-  inchDrive(40, 3000, 10, 5);
+  inchDrive(44, 3000, 10, 5);
   wait(250, msec);
   inchDrive(16, 1500, 10, 8);
-  gyroTurn(-115, 1500);
-  inchDrive(-15, 1500, 10, 5);
+  inchDrive(-10, 1500, 10, 10);
+  gyroTurn(-270, 1500);
+  // mogo_mech.set(false);
+  inchDrive(8, 1500, 10, 5);
+  wait(250, msec);
+  inchDrive(-5, 2000, 8);
+  gyroTurn(-145, 1500);
   mogo_mech.set(false);
-  wait(100, msec);
-  inchDrive(26, 1500, 10);
+  inchDrive(-18, 2000, 8);
+  inchDrive(9, 2000, 8);
   gyroTurn(90, 1500);
+  // // Inertial.setRotation(90,degrees);
+  inchDrive(18, 2000, 10, 4);
   Inertial.setRotation(90,degrees);
-  inchDrive(-54, 3000, 10, 3);
-  mogo_mech.set(true);
-  wait(100, msec);
-  gyroTurn(180, 1500);
-  inchDrive(10, 1500, 10, 8);
-  // gyroTurn(jj0,9000);
-  liftThread.join();
+  
+  wait(500, msec);
+  Inertial.setRotation(90,degrees);
+  // // gyroTurn(180, 1500);
+  inchDrive(-50, 3500, 2.5);
+  inchDrive(-50, 3500, 10, 2.5);
+  // // gyroTurn(jj0,9000);
+  // liftThread.join();
 
   isAutonomousRunning = false;
 }

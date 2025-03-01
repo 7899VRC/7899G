@@ -161,7 +161,7 @@ void arcTurnLeft(float rd, float angle, float maxSpeed=100){
   float oldError=error;
   float rspeed=maxSpeed*angle/fabs(angle);
   float lspeed=rspeed*(rd-W) * rd;
-  float accuracy= 1;
+  float accuracy= 2;
   left_motor_front.setPosition(0.0,rev);
   left_motor_middle.setPosition(0.0,rev);
   left_motor_back.setPosition(0.0,rev);
@@ -324,16 +324,27 @@ void autonomous(void)
   wait(500, msec);
   inchDrive(-20, 1500, 10);
   gyroTurn(0, 500);
-  inchDrive(-16, 1000, 10);
+  inchDrive(-15, 1000, 10, 4);
+  inchDrive(-1, 100, 10, 10);
   mogo_mech.set(true);
   currentState = idle;
   hook.spin(fwd, 100, pct);
   wait(500, msec);
-  gyroTurn(180, 1000);
-  arcTurnLeft(25, 90, 60);
-  inchDrive(10, 500, 10, 8);
+  gyroTurn(-190, 1000);
+  inchDrive(20, 700, 10, 8);
+  arcTurnLeft(10, 84, 60);
+  inchDrive(14, 700, 10, 8);
   wait(500, msec);
-  arcTurnLeft(25, -90, 60);
+  arcTurnLeft(25,-82, 60);
+  // inchDrive(-6, 700, 10, 8);
+  gyroTurn(90, 500);
+  inchDrive(10, 500, 10, 8);
+  gyroTurn(40, 500);
+  inchDrive(50, 2000, 10, 3);
+
+  
+  //arcTurnLeft(15, 180, 60);
+  
   //inchDrive(20,800, 10);
 
   liftThread.join();
