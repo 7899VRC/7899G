@@ -120,23 +120,32 @@ int dirToSpin(double target, double current) {
   return (diff > 180 ? -1 : 1);
 }
 
-void arcTurnLeft(float rd, float angle, float maxSpeed=100){
-  float kp=5.0;
-  float kd=0;
-  float targetArcLength=rd*2*PI*angle/360.0;
-  float arcLength=0.0;
-  float error=targetArcLength-arcLength;
-  float oldError=error;
-  float rspeed=maxSpeed*angle/fabs(angle);
-  float lspeed=rspeed*(rd-W) * rd;
-  float accuracy= 2;
-  left_motor_front.setPosition(0.0,rev);
-  left_motor_middle.setPosition(0.0,rev);
-  left_motor_back.setPosition(0.0,rev);
-  right_motor_front.setPosition(0.0,rev);
-  right_motor_middle.setPosition(0.0,rev);
-  right_motor_back.setPosition(0.0,rev);
-  while(fabs(error)>=accuracy){
+double angError(double target, double current) {
+  double b = std::fmax(target, current);
+  double s = std::fmin(target, current);
+  double diff = b - s;
+  return ((diff <= 180 ? diff : (360 - b) + s) * dirToSpin(target, current));
+}
+
+void arcTurnRight(float rd, float angle, float maxSpeed = 100)
+{
+  float kp = 0.5;
+  float kd = 0;
+  float targetArcLength = rd * 2 * PI * angle / 360.0;
+  float arcLength = 0.0;
+  float error = targetArcLength - arcLength;
+  float oldError = error;
+  float lspeed = maxSpeed * angle / fabs(angle);
+  float rspeed = lspeed * (rd - W) * rd;
+  float accuracy = 1;
+  left_motor_front.setPosition(0.0, rev);
+  left_motor_middle.setPosition(0.0, rev);
+  left_motor_back.setPosition(0.0, rev);
+  right_motor_front.setPosition(0.0, rev);
+  right_motor_middle.setPosition(0.0, rev);
+  right_motor_back.setPosition(0.0, rev);
+  while (fabs(error) >= accuracy)
+  {
     driveVolts(lspeed, rspeed, 10);
     // arcLength = left_motor_middle.position(rev) * G * PI * D;
 
@@ -389,29 +398,31 @@ void autonomous(void)
   wait(500, msec);
   inchDrive(-20, 1500);
   gyroTurn(0, 500);
-  inchDrive(-15, 1000, 10, 4);
-  inchDrive(-1, 100, 10, 10);
+  inchDrive(-17, 1000, 1.2, 50);
+  wait(150, msec);
   mogo_mech.set(true);
   currentState = idle;
   hook.spin(fwd, 100, pct);
   wait(500, msec);
-  gyroTurn(-190, 1000);
-  inchDrive(20, 700, 10, 8);
-  arcTurnLeft(10, 84, 60);
-  inchDrive(14, 700, 10, 8);
-  wait(500, msec);
-  arcTurnLeft(25,-82, 60);
-  // inchDrive(-6, 700, 10, 8);
-  gyroTurn(90, 500);
-  inchDrive(10, 500, 10, 8);
-  gyroTurn(40, 500);
-  inchDrive(50, 2000, 10, 3);
-
+  gyroTurn(145, 1000, _180);
+  inchDrive(13, 1200);
+  arc(15, 90, 1200, true);
+  inchDrive(8, 1000);
+  // inchDrive(10, 580);
+  wait(250, msec);
+  arc(20, 135, 1200, true, 1000);
+  inchDrive(-16,500);
+  gyroTurn(90, 1000);
+  inchDrive(16,500);
+  inchDrive(-4, 250);
+  // gyroTurn(neg(40), 1000); nice botty cheeck emerineia
+  // inchDrive(20,1000);
+  gyroTurn(35, 1000);
+  inchDrive(45, 3000);
   
-  //arcTurnLeft(15, 180, 60);
-  
-  //inchDrive(20,800, 10);
-
+  // mogo_mech.set(false);
+  // inchDrive(5, 250);
+  // gyroTurn(0, 1000);
   liftThread.join();
   isAutonomousRunning = false;
 }

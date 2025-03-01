@@ -1,4 +1,3 @@
-
 #include "robot.h"
 #include "map"
 
