@@ -356,9 +356,6 @@ void autonomous(void)
   thread liftThread = thread(moveLift);
   // Inertial.setRotation(startHeading, degrees);
 
-  // driveAngle(-95, 90, 4000);
-  // wait(1000000000000, sec);
-  // driveAngle(24, 80, 1000);
   currentState = alliance;
   wait(800, msec);
   driveAngle(-9, 0, 1000, 100);
@@ -410,14 +407,14 @@ void autonomous(void)
   wait(500, msec);
   gyroTurn(180, 1000);
   driveAngle(20, 180, 1000, 100);
-  gyroTurn(210, 1000);
+  gyroTurn(220, 1000);// change ti 210 turn is bad
   hook.stop();
-  driveAngle(30.5, 210, 3000);
+  driveAngle(30, 210, 3000);
   hook.spinFor(-100, deg);
   gyroTurn(270, 1000);
   currentState = loading2;
   hook.spin(fwd, 100, pct);
-  driveAngle(24, 270, 1500, 10);
+  driveAngle(25, 270, 1500, 10);
   currentState = scoring; // score 0 deg  - wall stake
   wait(500, msec);
   driveAngle(-15, 270, 2000, 10);
@@ -426,7 +423,7 @@ void autonomous(void)
   wait(250, msec);
   driveAngle(18, 0, 1500, 10, 8);
   driveAngle(-18, 0, 1500, 10, 8);
-  gyroTurn(-195, 2000);
+  gyroTurn(135, 2000);
   mogo_mech.set(false);
   driveAngle(-18, -195, 1500, 10, 8);
   driveAngle(100, -195, 3000, 2.5, 2, 1);
