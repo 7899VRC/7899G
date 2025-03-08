@@ -351,11 +351,11 @@ void pre_auton(void)
 void autonomous(void)
 {
 
-  // float startHeading = 0.0;
+  // float startHeading = 135;
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
   // Inertial.setRotation(startHeading, degrees);
-
+  
   currentState = alliance;
   wait(800, msec);
   driveAngle(-9, 0, 1000, 100);
@@ -382,12 +382,12 @@ void autonomous(void)
   currentState = scoring; // score 0 deg  - wall stake
   wait(500, msec);
   driveAngle(-11.3, -270, 2000, 10);
-  gyroTurn(0, 2000, 1.9);
+  gyroTurn(0, 1000, 1.9);
   driveAngle(44, 0, 3000, 10, 5,3);
   wait(250, msec);
   driveAngle(20, 0, 1500, 10, 8);
   driveAngle(-12, 0, 1500, 10, 10);
-  gyroTurn(-270, 1500);
+  gyroTurn(-270, 1000);
   driveAngle(15, -270, 1500, 10, 5);
   wait(250, msec);
   driveAngle(-14, -270, 2000, 8);
@@ -409,7 +409,7 @@ void autonomous(void)
   driveAngle(20, 180, 1000, 100);
   gyroTurn(220, 1000);// change ti 210 turn is bad
   hook.stop();
-  driveAngle(30, 210, 3000);
+  driveAngle(32, 220, 3000);
   hook.spinFor(-100, deg);
   gyroTurn(270, 1000);
   currentState = loading2;
@@ -418,18 +418,44 @@ void autonomous(void)
   currentState = scoring; // score 0 deg  - wall stake
   wait(500, msec);
   driveAngle(-15, 270, 2000, 10);
-  gyroTurn(-0, 2000);
+  gyroTurn(-0, 1000);
   driveAngle(44, 0, 3000, 10, 5, 3);
   wait(250, msec);
   driveAngle(18, 0, 1500, 10, 8);
+  
   driveAngle(-18, 0, 1500, 10, 8);
-  gyroTurn(135, 2000);
+  gyroTurn(135, 1000);
   mogo_mech.set(false);
-  driveAngle(-18, -195, 1500, 10, 8);
-  driveAngle(100, -195, 3000, 2.5, 2, 1);
-  gyroTurn(-100, 2000);
-  driveAngle(14, -100, 1500, 10, 8);
+  hook.stop();
+  currentState = idle;
+  driveAngle(-18, 135, 1500, 10, 8);
+  driveAngle(120, 135, 2200, 2.5, 2, 2);
+        hook.spin(fwd, 50, pct);
+  driveAngle(42, 180, 800);
+          hook.spin(fwd, 0, pct);
+  // hook.spinFor(2000, deg);
 
+    driveAngle(14, 140, 1000);
+
+      driveAngle(40, 110, 1500);//3rd goal drop
+      wait(250, msec);
+      driveAngle(-44, 109, 2000);
+      driveAngle(-25, 90, 2000, 10, 3.5, 1.2);
+      mogo_mech.set(true);
+      wait(250, msec); 
+      hook.spin(fwd, 100, pct);
+  // gyroTurn(0, 1000);
+      driveAngle(24, -30, 1500, 10, 8);
+      driveAngle(30, -96, 1500, 10, 8);
+      driveAngle(-30, 5, 1500, 10, 8);
+      mogo_mech.set(false);
+      hook.stop();
+      wait(250, msec); 
+      driveAngle(50, 45, 2000, 10, 8);
+      currentState = loading2;
+      gyroTurn(-135, 1000);
+  // mogo_mech.set(true);
+      
   isAutonomousRunning = false;
 }
 // ..........................................................................
