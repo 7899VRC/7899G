@@ -1,4 +1,3 @@
-
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
@@ -12,15 +11,13 @@
 #include "robot.h"
 
 #include "lift.hpp"
-#include <cmath>
+// #include "brainDisplay.hpp"
 #include <iostream>
-
-#define neg(ang) 360-ang
 
 const double PI = 3.1415265;
 const double D = 2.75;
 const double G = 3.0 / 4.0;
-const float W = 13.5; // width of rovot track
+const float W = 14.0; // width of rovot track
 
 static bool verified = false;
 
@@ -90,6 +87,21 @@ void moveLift()
   // Perform cleanup if necessary
 }
 
+
+int dirToSpin(double target, double current) {
+  double d = (target - current);
+  double diff = d<0 ? d + 360 : d;
+  return (diff > 180 ? -1 : 1);
+}
+
+
+double angError(double target, double current) {
+    double b = std::max(target, current);
+    double s = std::min(target, current);
+    double diff = b - s;
+    
+    return((diff <= 180 ? diff : (360-b) + s) * dirToSpin(target, current));
+}
 void driveVolts(int lspeed, int rspeed, int wt)
 {
   lspeed = lspeed * 120;
@@ -114,109 +126,88 @@ void driveBrake()
   right_motor_back.stop(brake);
 }
 
-int dirToSpin(double target, double current) {
-  double d = (target - current);
-  double diff = d<0 ? d + 360 : d;
-  return (diff > 180 ? -1 : 1);
-}
-
-void arcTurnLeft(float rd, float angle, float maxSpeed=100){
-  float kp=5.0;
-  float kd=0;
-  float targetArcLength=rd*2*PI*angle/360.0;
-  float arcLength=0.0;
-  float error=targetArcLength-arcLength;
-  float oldError=error;
-  float rspeed=maxSpeed*angle/fabs(angle);
-  float lspeed=rspeed*(rd-W) * rd;
-  float accuracy= 2;
-  left_motor_front.setPosition(0.0,rev);
-  left_motor_middle.setPosition(0.0,rev);
-  left_motor_back.setPosition(0.0,rev);
-  right_motor_front.setPosition(0.0,rev);
-  right_motor_middle.setPosition(0.0,rev);
-  right_motor_back.setPosition(0.0,rev);
-  while(fabs(error)>=accuracy){
-    driveVolts(lspeed, rspeed, 10);
-    // arcLength = left_motor_middle.position(rev) * G * PI * D;
-
-    oldError = error;
-    // error = targetArcLength - arcLength;
-    float heading = Inertial.rotation(deg);
-    error = angle - heading;
-
-    if (error > 180)
-    {
-      error = error - 360;
-    }
-    if (error < -180)
-    {
-      error = error + 360;
-    }
-    lspeed = kp * error + kd * (error - oldError);
-
-    if (fabs(lspeed) >= maxSpeed)
-    {
-      lspeed = maxSpeed * error / fabs(error);
-    }
-
-    rspeed = lspeed * (rd - W) / rd;
-  }
-  driveBrake();
-  // working on
-}
-
-void arc(float rd, float angle, int timeout, bool reverse, float maxSpeed = 127)
+void arcTurn(float rd, float angle, float maxSpeed = 100)
 {
-  timer t1;
-  float kp = 2.3;
-  float kd = 0;
+  float kp = 1.0;
+  float kd = 1.0;
   float targetArcLength = rd * 2 * PI * angle / 360.0;
   float arcLength = 0.0;
   float error = targetArcLength - arcLength;
   float oldError = error;
-  float rspeed = maxSpeed * angle / fabs(angle);
-  float lspeed = rspeed * (rd - W) * rd;
-  float accuracy = 1;
+  float lspeed = maxSpeed * angle / fabs(angle);
+  float rspeed = lspeed * (rd - W) * rd;
+  float accuracy = 0.2;
   left_motor_front.setPosition(0.0, rev);
   left_motor_middle.setPosition(0.0, rev);
   left_motor_back.setPosition(0.0, rev);
   right_motor_front.setPosition(0.0, rev);
   right_motor_middle.setPosition(0.0, rev);
   right_motor_back.setPosition(0.0, rev);
-  while (1)
+  while (fabs(error) >= accuracy)
   {
-    if (reverse) {
-      driveVolts(-rspeed, -lspeed, 10);
-    }
-    else {
-      driveVolts(rspeed, lspeed, 10);
-    }
-    arcLength = right_motor_middle.position(rev) * G * PI * D;
+    driveVolts(lspeed, rspeed, 10);
+    arcLength = left_motor_middle.position(rev) * G * PI * D;
     oldError = error;
-    // error = targetArcLength - arcLength;
-    float heading = Inertial.heading(deg);
-    error = angError(angle, heading);
-
-    lspeed = kp * error + kd * (error - oldError);
-
+    error + targetArcLength - arcLength;
+    lspeed = kp * error + kd + (error - oldError);
     if (fabs(lspeed) >= maxSpeed)
-    {
       lspeed = maxSpeed * error / fabs(error);
-    }
-
     rspeed = lspeed * (rd - W) / rd;
-
-    if (t1.time(msec) > timeout)
-    {
-      break;
-    }
   }
   driveBrake();
   // working on
 }
 
-void inchDrive(float targetDistanceInches, float timeout, float slew = -1, double maxVel = -1, float kp = 9.0, float wait_ms = 10)
+void driveAngle(float targetDistanceInches, float angle, float timeout, float wait_ms = 10, float kp = 6.0, float slew = -1, double maxVel = -1)
+{
+  left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
+  float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
+  float error = targetDistanceInches - actualDistance;
+  float targetVelocity;
+  float accuracy = 0.5;
+  float prevVelocity = 0;
+  float turnKp = 1.7;
+  timer t2;
+
+  while (fabs(error) > accuracy)
+  {
+    float heading = Inertial.heading(deg);
+    float angularError = angError(angle, heading);
+
+    float angularVelocity = angularError * turnKp;
+
+    targetVelocity = kp * error;
+    int sign = targetVelocity > 0 ? 1 : -1;
+    if ((fabs(targetVelocity) + fabs(angularVelocity)) >= 100.0)
+    {
+      targetVelocity = sign * (100.0 - fabs(angularVelocity));
+    }
+    std::cout << heading << std::endl;
+    if (slew != -1)
+    {
+      targetVelocity = sign * std::min(fabs(targetVelocity), fabs(prevVelocity) + slew);
+    }
+    if (maxVel != -1)
+      targetVelocity = sign * std::min(fabs(targetVelocity), maxVel);
+    prevVelocity = targetVelocity;
+    // Drives forward until actual distance meets target distance
+
+    driveVolts(targetVelocity + angularVelocity, targetVelocity - angularVelocity, 10);
+
+    actualDistance = left_motor_front.position(rev) * PI * D * G;
+    error = targetDistanceInches - actualDistance;
+    Brain.Screen.print(error);
+    Brain.Screen.newLine();
+    if (t2.time(msec) > timeout)
+    {
+      break;
+    }
+  }
+  driveBrake();
+  wait(wait_ms, msec);
+}
+
+void inchDrive(float targetDistanceInches, float timeout, float wait_ms = 10, float kp = 6.0, float slew = -1, double maxVel = -1)
 {
   left_motor_front.setPosition(0.0, rev); // resets rotations of left_motor_front
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
@@ -225,6 +216,7 @@ void inchDrive(float targetDistanceInches, float timeout, float slew = -1, doubl
   float accuracy = 0.5;
   float prevVelocity = 0;
   timer t2;
+
   while (fabs(error) > accuracy)
   {
     targetVelocity = kp * error;
@@ -233,7 +225,8 @@ void inchDrive(float targetDistanceInches, float timeout, float slew = -1, doubl
     {
       targetVelocity = sign * std::min(fabs(targetVelocity), fabs(prevVelocity) + slew);
     }
-    if (maxVel != -1) targetVelocity = sign * std::min(fabs(targetVelocity), maxVel);
+    if (maxVel != -1)
+      targetVelocity = sign * std::min(fabs(targetVelocity), maxVel);
     prevVelocity = targetVelocity;
     // Drives forward until actual distance meets target distance
 
@@ -256,7 +249,7 @@ void inchDrive(float targetDistanceInches, float timeout, float slew = -1, doubl
 
 void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 {
-
+  if (targetHeading < 0 ) targetHeading += 360;
   float heading = 0.0; // initialize a variable for heading
   // Inertial.setRotation(0.0, degrees);  //reset Gyro to zero degrees
   // Inertial.resetRotation();
@@ -266,14 +259,14 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
   float olderror = error;
   float accuracy = 0.5;
   int count = 0;
-  float kd = 0.3;
+  float kd = 0.1;
   timer t1;
 
   while (fabs(error) > accuracy or count < 25)
   {
     float speed = error * kp + kd * (error - olderror);
     driveVolts(speed, -speed, 10);
-    heading = Inertial.heading(deg);
+    heading = Inertial.rotation(deg);
     std::cout << heading << "\n";
     // if (heading > 360)
     // {
@@ -284,7 +277,7 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
     //   heading = heading + 360;
     // }
     // measure the heading of the robot
-    error = angError(targetHeading, heading);
+    error = targetHeading - heading;
 
     if (error > 180)
     {
@@ -334,6 +327,11 @@ void pre_auton(void)
   {
     wait(10, msec);
   }
+  double pos = LBRotation.position(degrees);
+  if (pos > 300)
+  {
+    LBRotation.setPosition(pos - 360, degrees);
+  }
 
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
@@ -351,68 +349,41 @@ void pre_auton(void)
 
 void autonomous(void)
 {
-  double _45 = 2;
-  double _180 = 1.3;
-  // negatvie side
-  //  isAutonomousRunning = true;
-  //  thread liftThread = thread(moveLift);
-  //  gyroTurn(-34, 500);
-  //  inchDrive(5, 500, 10, 8);
-  //  currentState = alliance;
-  //  wait(500, msec);
-  //  inchDrive(-20, 1500, 10);
-  //  gyroTurn(0, 500);
-  //  inchDrive(-16, 1000, 10);
-  //  mogo_mech.set(true);
-  //  currentState = idle;
-  //  hook.spin(fwd, 100, pct);
-  //  wait(500, msec);
-  //  gyroTurn(180, 1000);
-  //  arcTurnLeft(25, 90, 60);
-  //  inchDrive(10, 500, 10, 8);
-  //  wait(500, msec);
-  //  arcTurnLeft(25, -90, 60);
-  //  //inchDrive(20,800, 10);
 
-  // liftThread.join();
-
-  // isAutonomousRunning = false;
-
-  // solo awp
+  // float startHeading = 135;
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
+  // Inertial.setRotation(startHeading, degrees);
   
-
-  gyroTurn(neg(32), 500);
-  inchDrive(5, 500);
-  currentState = alliance;
+ gyroTurn(-36.5, 500);
+ driveAngle(7, -36.5, 500);//
+ currentState = alliance;
+ wait(500, msec);
+ driveAngle(-20, -36.5, 500);
+ gyroTurn(0, 500);
+ driveAngle(-15, 0, 500, 4);
+ driveAngle(-1, 0, 200, 10);
+ mogo_mech.set(true);
+ currentState = idle;
+ hook.spin(fwd, 100, pct);
+ wait(500, msec);
+ gyroTurn(-220, 1000);
+ driveAngle(26, -220, 1000);
+ wait(500, msec);
+ driveAngle(30, 100, 500);// arc
   wait(500, msec);
-  inchDrive(-20, 1500);
-  gyroTurn(0, 500);
-  inchDrive(-15, 1000, 10, 4);
-  inchDrive(-1, 100, 10, 10);
-  mogo_mech.set(true);
-  currentState = idle;
-  hook.spin(fwd, 100, pct);
-  wait(500, msec);
-  gyroTurn(-190, 1000);
-  inchDrive(20, 700, 10, 8);
-  arcTurnLeft(10, 84, 60);
-  inchDrive(14, 700, 10, 8);
-  wait(500, msec);
-  arcTurnLeft(25,-82, 60);
-  // inchDrive(-6, 700, 10, 8);
-  gyroTurn(90, 500);
-  inchDrive(10, 500, 10, 8);
-  gyroTurn(40, 500);
-  inchDrive(50, 2000, 10, 3);
+ driveAngle(-30, 120, 1000, 8);//arc back // change 1st paramiter to 34 if bad
 
-  
-  //arcTurnLeft(15, 180, 60);
-  
-  //inchDrive(20,800, 10);
-
-  liftThread.join();
+ gyroTurn(-270, 500);
+driveAngle(20, -270, 500, 3);
+wait(250, msec);
+driveAngle(-14, -270, 500, 3);
+gyroTurn(-317, 500);// angled right for corner
+driveAngle(66, -317, 1400, 3, 3, 1.2);  
+wait(250, msec);
+driveAngle(-25, -317, 500, 3);  //less 5 if bad
+wait(250, msec);
+driveAngle(26, -317, 800, 3);  //les 5 if bad
   isAutonomousRunning = false;
 }
 // ..........................................................................
@@ -522,9 +493,11 @@ int main()
   pre_auton();
   wait(10, msec);
 
+
   // Prevent main from exiting with an infinite loop.
   while (true)
   {
+   
     int idle = 2;
 
     wait(100, msec);
