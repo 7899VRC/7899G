@@ -399,36 +399,37 @@ void autonomous(void)
  isAutonomousRunning = true;
  thread liftThread = thread(moveLift);
  // Inertial.setRotation(startHeading, degrees);
- gyroTurn(36.5, 500);
-driveAngle(7, 36.5, 500);//
+ gyroTurn(40, 500);// change to 37.5 if bad
+driveAngle(6, 40, 500);//
 currentState = alliance;
 wait(500, msec);
-driveAngle(-20, -36.5, 500);
+driveAngle(-20, 40, 500);
 gyroTurn(-0, 500);
-driveAngle(-15, -0, 500, 4);
-driveAngle(-1, -0, 200, 10);
+driveAngle(-15, -0, 700, 4, 4, 1.2);
+wait(50, msec);
+driveAngle(-13, -0, 400, 4, 6);
 mogo_mech.set(true);
 currentState = idle;
 hook.spin(fwd, 100, pct);
 wait(500, msec);
-gyroTurn(220, 1000);
-driveAngle(26, 220, 1000);
+gyroTurn(230, 1000);
+driveAngle(20, 230, 1000); // drive angle to 22.5 if bad
 wait(500, msec);
-driveAngle(30, -100, 500);// arc
- wait(500, msec);
-driveAngle(-30, -120, 1000, 8);//arc back // change 1st paramiter to 34 if bad
+driveAngle(22, -90, 700);// arc
+ wait(250, msec);
+driveAngle(-38, -120, 1000, 8);//arc back // change 1st paramiter to 34 if bad
 
 
 gyroTurn(270, 500);
-driveAngle(20, 270, 500, 3);
+driveAngle(23, 270, 500, 3);
 wait(250, msec);
-driveAngle(-14, 270, 500, 3);
+driveAngle(-13, 270, 500, 3);
 gyroTurn(317, 500);// angled right for corner
-driveAngle(66, 317, 1400, 3, 3, 1.2); 
+driveAngle(105, 317, 1700, 3, 1, 1.2); 
 wait(250, msec);
-driveAngle(-25, 317, 500, 3);  //less 5 if bad
+driveAngle(-27, 317, 500, 3);  //less 5 if bad
 wait(250, msec);
-driveAngle(26, 317, 800, 3);  //les 5 if bad
+driveAngle(15, 317, 800, 3);  //less 5 if bad
  isAutonomousRunning = false;
 }
 // ..........................................................................
