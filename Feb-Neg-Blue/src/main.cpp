@@ -112,7 +112,18 @@ int dirToSpin(double target, double current) {
  return (diff > 180 ? -1 : 1);
 }
 
+// void kickOut();
+//  while(Limit = false){
+//   hook.spin(fwd, 100, pct);
+//   wait(10, msec);
+//   limit.sensor.Value();
 
+//  }
+
+
+//  wait(5, msec)
+//  motor.brake();
+//  else;
 
 
 double angError(double target, double current) {
