@@ -49,8 +49,8 @@ motor hook = motor(PORT2, ratio6_1, false);
 motor LB = motor(PORT4, ratio36_1, true);
 
 inertial Inertial = inertial(PORT7);
-optical Optical = optical(PORT15);
-color detectedColor = Optical.color();
+optical ColorSort = optical(PORT5);
+limit Limit = limit(Brain.ThreeWirePort.A);
 rotation LBRotation = rotation(PORT3, false);
 
 #endif
