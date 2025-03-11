@@ -398,7 +398,7 @@ void autonomous(void)
   // float startHeading = 135;
   isAutonomousRunning = true;
   thread liftThread = thread(moveLift);
-  thread colorSortThread = thread(colorSort);
+  //thread colorSortThread = thread(colorSort);
   // Inertial.setRotation(startHeading, degrees);
 
 
@@ -413,6 +413,7 @@ void autonomous(void)
   driveAngle(-13, -0, 400, 4, 6);
   mogo_mech.set(true);
   currentState = idle;
+  thread colorSortThread = thread(colorSort);
   hook.spin(fwd, 100, pct);
   wait(500, msec);
   gyroTurn(230, 1000);
