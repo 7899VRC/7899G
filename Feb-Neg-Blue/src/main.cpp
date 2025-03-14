@@ -208,7 +208,7 @@ void driveAngle(float targetDistanceInches, float angle, float timeout, float wa
   float actualDistance = 0.0;             // actual distance calculates rotations of left_motor_front
   float error = targetDistanceInches - actualDistance;
   float targetVelocity;
-  float accuracy = 0.5;
+  float accuracy = 1;
   float prevVelocity = 0;
   float turnKp = 1.7;
   timer t2;
@@ -302,7 +302,7 @@ void gyroTurn(float targetHeading, int timeout, double kp = 1.5)
 
   float error = targetHeading - heading;
   float olderror = error;
-  float accuracy = 0.5;
+  float accuracy = 1;
   int count = 0;
   float kd = 0.1;
   timer t1;
@@ -403,7 +403,7 @@ void autonomous(void)
 
 
   gyroTurn(40, 500);      // change to 37.5 if bad
-  driveAngle(6, 40, 500); //
+  driveAngle(6, 40, 400); //
   currentState = alliance;
   wait(500, msec);
   driveAngle(-20, 40, 500);
@@ -421,7 +421,7 @@ void autonomous(void)
   wait(500, msec);
   driveAngle(22, -90, 700); // arc
   wait(250, msec);
-  driveAngle(-38, -120, 1000, 8); // arc back // change 1st paramiter to 34 if bad
+  driveAngle(-38, -120, 700, 8); // arc back // change 1st paramiter to 34 if bad
 
   gyroTurn(270, 500);
   driveAngle(23, 270, 500, 3);
@@ -432,7 +432,16 @@ void autonomous(void)
   wait(250, msec);
   driveAngle(-27, 317, 500, 3); // less 5 if bad
   wait(250, msec);
-  driveAngle(15, 317, 800, 3); // less 5 if bad
+  driveAngle(15, 317, 800, 3);
+   currentState = loading;
+   hook.stop();
+  driveAngle(-78, 317, 1000, 6); 
+  //currentState = scoring;
+  // wait(100, msec);
+  // gyroTurn(80, 800);
+  // driveAngle(22, 80, 800, 3); 
+  // gyroTurn(140, 800, 2.5);
+  // wait(250,msec);
   isAutonomousRunning = false;
 }
 // ..........................................................................
